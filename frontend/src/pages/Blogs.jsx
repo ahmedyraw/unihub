@@ -93,7 +93,7 @@ const Blogs = () => {
   );
 
   return (
-    <Container className="py-4">
+    <Container className="py-4" style={{ marginTop: '100px' }}>
       {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
       {success && <Alert variant="success" dismissible onClose={() => setSuccess('')}>{success}</Alert>}
       
@@ -163,15 +163,15 @@ const Blogs = () => {
           <div className="spinner-border text-primary" />
         </div>
       ) : (
-        <Row className="g-4">
+        <Row className="g-3">
           {filteredBlogs.map(blog => (
-            <Col md={6} lg={4} key={blog.blogId}>
-              <Card className="h-100" style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', border: '1px solid var(--border-color)' }}>
+            <Col xs={12} sm={6} lg={4} key={blog.blogId}>
+              <Card className="h-100" style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', border: '1px solid var(--border-color)', minHeight: '320px' }}>
                 <Card.Body>
-                  <div className="mb-2">
-                    <Badge bg="info" className="me-1">{blog.category}</Badge>
+                  <div className="mb-2 d-flex flex-wrap gap-1">
+                    <Badge bg="info">{blog.category}</Badge>
                     {blog.isGlobal && <Badge bg="warning">🌍 Global</Badge>}
-                    <Badge bg={getStatusVariant(blog.status)} className="ms-1">{blog.status}</Badge>
+                    <Badge bg={getStatusVariant(blog.status)}>{blog.status}</Badge>
                   </div>
                   <Card.Title style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>{blog.title}</Card.Title>
                   <Card.Text style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>{truncateText(blog.content, 150)}</Card.Text>

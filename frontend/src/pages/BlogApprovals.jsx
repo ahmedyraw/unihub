@@ -8,6 +8,7 @@ const BlogApprovals = () => {
   const { user } = useAuth();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState(null);
 
   useEffect(() => {
     loadPendingBlogs();
@@ -26,22 +27,30 @@ const BlogApprovals = () => {
   };
 
   const handleApprove = async (id) => {
+    setProcessingId(id);
     try {
       await blogService.approveBlog(id);
-      loadPendingBlogs();
+      setBlogs(blogs.filter(b => b.blogId !== id));
     } catch (error) {
       console.error('Failed to approve blog:', error);
+      alert('Failed to approve blog. Please try again.');
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleReject = async (id) => {
     const reason = prompt('Rejection reason:');
     if (!reason) return;
+    setProcessingId(id);
     try {
       await blogService.rejectBlog(id, reason);
-      loadPendingBlogs();
+      setBlogs(blogs.filter(b => b.blogId !== id));
     } catch (error) {
       console.error('Failed to reject blog:', error);
+      alert('Failed to reject blog. Please try again.');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -80,17 +89,19 @@ const BlogApprovals = () => {
                           size="sm" 
                           variant="success" 
                           onClick={() => handleApprove(blog.blogId)}
+                          disabled={processingId === blog.blogId}
                           style={{ fontWeight: '600', minWidth: '90px' }}
                         >
-                          ✅ Approve
+                          {processingId === blog.blogId ? '⏳ Processing...' : '✅ Approve'}
                         </Button>
                         <Button 
                           size="sm" 
                           variant="danger" 
                           onClick={() => handleReject(blog.blogId)}
+                          disabled={processingId === blog.blogId}
                           style={{ fontWeight: '600', minWidth: '90px' }}
                         >
-                          ❌ Reject
+                          {processingId === blog.blogId ? '⏳ Processing...' : '❌ Reject'}
                         </Button>
                       </div>
                     </td>

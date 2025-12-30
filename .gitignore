@@ -1,0 +1,205 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Frontend build output
+frontend/dist/
+frontend/dist-ssr/
+frontend/build/
+
+# Frontend environment files
+frontend/.env
+frontend/.env.local
+frontend/.env.production.local
+frontend/.env.development.local
+frontend/.env.test.local
+
+# Frontend testing
+frontend/coverage/
+frontend/.nyc_output/
+
+# Frontend misc
+frontend/.vite/
+frontend/.cache/
+
+# Backend application properties (sensitive)
+src/main/resources/application-prod.properties
+src/main/resources/application-dev.properties
+
+# Database files
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*.dump
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS generated files
+.Spotlight-V100
+.Trashes
+
+# Documentation (keep only main docs)
+*_FIX*.md
+*_SUMMARY*.md
+*_GUIDE*.md
+*_REPORT*.md
+*_ANALYSIS*.md
+*_IMPLEMENTATION*.md
+*_CHECKLIST*.md
+*_STATUS*.md
+*_PLAN*.md
+*_COMPLETE*.md
+*_FINAL*.md
+*_QUICK*.md
+*_TEST*.md
+*_SOLUTION*.md
+*_VERIFICATION*.md
+*_DEBUG*.md
+*_PHASE*.md
+*_PROGRESS*.md
+*_CHANGES*.md
+*_ENHANCEMENTS*.md
+*_BUGS*.md
+*_FIXES*.md
+*_INDEX*.md
+*_REFERENCE*.md
+*_V2*.md
+HELP.md
+LICENSE
+
+# Keep only essential documentation
+!README.md
+!SETUP.md
+!API_DOCUMENTATION.md
+!DB_DOCUMENTATION.md
+!ARCHITECTURE.md
+
+# Test files
+*.test.js
+*.spec.js
+test_*.js
+
+# Cypress
+frontend/cypress/videos/
+frontend/cypress/screenshots/
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Package lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+
+# JUnit test results
+TEST-*.xml
+
+# Spring Boot DevTools
+.spring-boot-devtools.properties
+
+# Application properties with sensitive data
+application-*.properties
+!application.properties.example

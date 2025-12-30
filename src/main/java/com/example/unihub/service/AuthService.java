@@ -21,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -43,6 +45,12 @@ public class AuthService {
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
+        }
+        
+        // Validate password strength (additional backend validation)
+        List<String> passwordErrors = com.example.unihub.util.PasswordValidator.validate(request.getPassword());
+        if (!passwordErrors.isEmpty()) {
+            throw new IllegalArgumentException("Password validation failed: " + String.join(", ", passwordErrors));
         }
         
         // Create new user
@@ -133,5 +141,14 @@ public class AuthService {
         }
         
         return response;
+    }
+
+    /**
+     * Get current user by email
+     */
+    public AuthResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UnauthorizedException("User not found"));
+        return buildAuthResponse(user, null);
     }
 }

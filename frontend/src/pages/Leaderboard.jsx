@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, Table, Badge, ButtonGroup, Button, Form } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../hooks/useWebSocket';
@@ -14,18 +14,7 @@ const Leaderboard = () => {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadLeaderboard();
-  }, [scope, type]);
-
-  // Auto-refresh leaderboard when WebSocket update received
-  useEffect(() => {
-    if (leaderboardUpdated) {
-      loadLeaderboard();
-    }
-  }, [leaderboardUpdated]);
-
-  const loadLeaderboard = async () => {
+  const loadLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
       const universityId = scope === LEADERBOARD_SCOPES.UNIVERSITY ? user?.universityId : null;
@@ -38,10 +27,21 @@ const Leaderboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [scope, type, user?.universityId]);
+
+  useEffect(() => {
+    loadLeaderboard();
+  }, [loadLeaderboard]);
+
+  // Auto-refresh leaderboard when WebSocket update received
+  useEffect(() => {
+    if (leaderboardUpdated) {
+      loadLeaderboard();
+    }
+  }, [leaderboardUpdated, loadLeaderboard]);
 
   return (
-    <Container className="py-4">
+    <Container className="py-4" style={{ marginTop: '100px' }}>
       <Row className="mb-4">
         <Col>
           <h2>🏆 Leaderboard</h2>

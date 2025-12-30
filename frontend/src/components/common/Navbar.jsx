@@ -13,6 +13,15 @@ const Navbar = () => {
   const { notificationReceived } = useWebSocket();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -54,53 +63,51 @@ const Navbar = () => {
   };
 
   return (
-    <BSNavbar 
-      bg={theme === 'light' ? 'light' : 'dark'} 
-      variant={theme === 'light' ? 'light' : 'dark'} 
+    <BSNavbar
+      variant={theme === 'light' ? 'light' : 'dark'}
       expand="lg"
-      sticky="top" 
-      className="navbar-theme"
+      fixed="top"
+      className={`navbar-theme ${scrolled ? 'scrolled' : ''}`}
     >
       <Container>
-        <BSNavbar.Brand as={Link} to="/" style={{ fontSize: '1.75rem', fontWeight: '700' }}>
+        <BSNavbar.Brand as={Link} to="/">
           🎓 UniHub
         </BSNavbar.Brand>
         <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
         <BSNavbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link as={Link} to="/events" style={{ fontWeight: '500', fontSize: '1.05rem', padding: '0.5rem 1rem' }}>📅 Events</Nav.Link>
-            <Nav.Link as={Link} to="/blogs" style={{ fontWeight: '500', fontSize: '1.05rem', padding: '0.5rem 1rem' }}>📝 Blogs</Nav.Link>
-            <Nav.Link as={Link} to="/leaderboard" style={{ fontWeight: '500', fontSize: '1.05rem', padding: '0.5rem 1rem' }}>🏆 Leaderboard</Nav.Link>
-            <Nav.Link as={Link} to="/badges" style={{ fontWeight: '500', fontSize: '1.05rem', padding: '0.5rem 1rem' }}>🎖️ Badges</Nav.Link>
+            {!isAuthenticated() && <Nav.Link as={Link} to="/">Home</Nav.Link>}
+            <Nav.Link as={Link} to="/events">Events</Nav.Link>
+            <Nav.Link as={Link} to="/blogs">Blogs</Nav.Link>
+            <Nav.Link as={Link} to="/leaderboard">Leaderboard</Nav.Link>
+            {isAuthenticated() && <Nav.Link as={Link} to="/badges">🎖️ Badges</Nav.Link>}
           </Nav>
-          
+
           <Nav>
             {isAuthenticated() ? (
               <>
-                <Nav.Link as={Link} to="/notifications" className="position-relative" style={{ fontWeight: '500', fontSize: '1.05rem', padding: '0.5rem 1rem' }}>
+                <Nav.Link as={Link} to="/notifications" className="position-relative">
                   🔔 Notifications
                   {unreadCount > 0 && (
-                    <Badge bg="danger" pill className="position-absolute top-0 start-100 translate-middle" style={{ fontSize: '0.75rem', fontWeight: '700' }}>
+                    <Badge bg="danger" pill className="position-absolute top-0 start-100 translate-middle">
                       {unreadCount}
                     </Badge>
                   )}
                 </Nav.Link>
-                
+
                 <Button
                   onClick={toggleTheme}
                   variant="link"
                   className="theme-toggle nav-link"
                   title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-                  style={{ padding: '0.5rem', marginLeft: '0.5rem' }}
                 >
                   {theme === 'light' ? '🌙' : '☀️'}
                 </Button>
-                
-                <NavDropdown 
-                  title={`👤 ${user.name}`} 
+
+                <NavDropdown
+                  title={`👤 ${user.name}`}
                   id="user-dropdown"
                   align="end"
-                  style={{ fontWeight: '600', fontSize: '1.05rem' }}
                 >
                   <NavDropdown.Item as={Link} to="/dashboard">
                     Dashboard
@@ -118,10 +125,13 @@ const Navbar = () => {
                   <NavDropdown.Item as={Link} to="/settings">
                     Settings
                   </NavDropdown.Item>
-                  
+
                   {(user.role === USER_ROLES.SUPERVISOR || user.role === USER_ROLES.ADMIN) && (
                     <>
                       <NavDropdown.Divider />
+                      <NavDropdown.Item as={Link} to="/event-requests">
+                        Event Requests
+                      </NavDropdown.Item>
                       <NavDropdown.Item as={Link} to="/events/approvals">
                         Event Approvals
                       </NavDropdown.Item>
@@ -133,7 +143,7 @@ const Navbar = () => {
                       </NavDropdown.Item>
                     </>
                   )}
-                  
+
                   {user.role === USER_ROLES.ADMIN && (
                     <>
                       <NavDropdown.Divider />
@@ -148,7 +158,7 @@ const Navbar = () => {
                       </NavDropdown.Item>
                     </>
                   )}
-                  
+
                   <NavDropdown.Divider />
                   <NavDropdown.Item onClick={handleLogout}>
                     Logout
@@ -162,24 +172,21 @@ const Navbar = () => {
                   variant="link"
                   className="theme-toggle nav-link"
                   title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-                  style={{ padding: '0.5rem', marginLeft: '0.5rem', marginRight: '0.5rem' }}
                 >
                   {theme === 'light' ? '🌙' : '☀️'}
                 </Button>
-                <Button 
-                  as={Link} 
-                  to="/login" 
-                  variant="outline-primary" 
+                <Button
+                  as={Link}
+                  to="/login"
+                  variant="outline-primary"
                   className="me-2"
-                  style={{ fontWeight: '600', padding: '0.5rem 1.25rem', borderWidth: '2px' }}
                 >
                   Login
                 </Button>
-                <Button 
-                  as={Link} 
-                  to="/register" 
+                <Button
+                  as={Link}
+                  to="/register"
                   variant="primary"
-                  style={{ fontWeight: '600', padding: '0.5rem 1.25rem' }}
                 >
                   Register
                 </Button>

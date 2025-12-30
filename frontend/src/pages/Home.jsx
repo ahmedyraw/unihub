@@ -1,270 +1,302 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Container, Button, Card, Row, Col, Badge } from 'react-bootstrap';
+import { Container, Button, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
-import eventService from '../services/eventService';
-import blogService from '../services/blogService';
-import gamificationService from '../services/gamificationService';
-import { formatDate, truncateText } from '../utils/helpers';
+import HeroSection from '../components/home/HeroSection';
+import FeatureCard from '../components/home/FeatureCard';
+import EventCard from '../components/home/EventCard';
+import OpportunityCard from '../components/home/OpportunityCard';
+import LeaderboardPreview from '../components/home/LeaderboardPreview';
+import './Home.css';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [recentEvents, setRecentEvents] = useState([]);
-  const [recentBlogs, setRecentBlogs] = useState([]);
-  const [topMembers, setTopMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (isAuthenticated()) {
       navigate('/dashboard');
-    } else {
-      loadHomeData();
     }
   }, [isAuthenticated, navigate]);
 
-  const loadHomeData = async () => {
-    try {
-      // Load recent approved events
-      const events = await eventService.getAllEvents({ status: 'APPROVED' });
-      const sortedEvents = Array.isArray(events) ? [...events].sort((a, b) => {
-        const now = new Date();
-        const aEnded = new Date(a.endDate) < now;
-        const bEnded = new Date(b.endDate) < now;
-
-        if (aEnded && !bEnded) return 1;
-        if (!aEnded && bEnded) return -1;
-
-        const aTimestamp = new Date(a.createdAt || a.startDate || 0).getTime();
-        const bTimestamp = new Date(b.createdAt || b.startDate || 0).getTime();
-        return bTimestamp - aTimestamp;
-      }) : [];
-      setRecentEvents(sortedEvents.slice(0, 3));
-
-      // Load recent approved blogs
-      const blogs = await blogService.getAllBlogs({ status: 'APPROVED' });
-      const sortedBlogs = Array.isArray(blogs) ? [...blogs].sort((a, b) => {
-        const aTimestamp = new Date(a.createdAt || 0).getTime();
-        const bTimestamp = new Date(b.createdAt || 0).getTime();
-        return bTimestamp - aTimestamp;
-      }) : [];
-      setRecentBlogs(sortedBlogs.slice(0, 3));
-
-      // Load top 3 members for leaderboard sneak peek
-      const members = await gamificationService.getTopMembers('GLOBAL', null, 3);
-      setTopMembers(Array.isArray(members) ? members : []);
-    } catch (error) {
-      console.error('Failed to load home data:', error);
-      setRecentEvents([]);
-      setRecentBlogs([]);
-      setTopMembers([]);
-    } finally {
-      setLoading(false);
+  // Mock data for upcoming events
+  const upcomingEvents = [
+    {
+      category: 'Workshop',
+      title: 'Web Development Bootcamp',
+      date: 'Jan 15, 2026',
+      time: '10:00 AM',
+      location: 'Engineering Hall',
+      attendees: 45
+    },
+    {
+      category: 'Seminar',
+      title: 'AI & Machine Learning Trends',
+      date: 'Jan 18, 2026',
+      time: '2:00 PM',
+      location: 'Science Building',
+      attendees: 78
+    },
+    {
+      category: 'Competition',
+      title: 'Hackathon 2026',
+      date: 'Jan 20, 2026',
+      time: '9:00 AM',
+      location: 'Tech Hub',
+      attendees: 120
     }
-  };
+  ];
+
+  // Mock data for opportunities
+  const latestOpportunities = [
+    {
+      type: 'Internship',
+      title: 'Software Engineering Intern',
+      organization: 'Tech Innovations Inc.',
+      location: 'Remote',
+      postedTime: '2 hours ago'
+    },
+    {
+      type: 'Part-time',
+      title: 'Campus Ambassador',
+      organization: 'EdTech Startup',
+      location: 'On-site',
+      postedTime: '5 hours ago'
+    },
+    {
+      type: 'Research',
+      title: 'AI Research Assistant',
+      organization: 'University Lab',
+      location: 'Hybrid',
+      postedTime: '1 day ago'
+    }
+  ];
+
+  // Mock data for top contributors
+  const topContributors = [
+    { name: 'Ahmed Hassan', points: 2450 },
+    { name: 'Sarah Johnson', points: 2180 },
+    { name: 'Mohamed Ali', points: 1990 }
+  ];
 
   return (
-    <div>
+    <div className="home-page">
       {/* Hero Section */}
-      <div className="bg-gradient-primary text-white py-5" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}>
+      <HeroSection />
+
+      {/* Empowering University Communities Section */}
+      <section className="section-empowering">
         <Container>
-          <div className="text-center py-5">
-            <h1 className="display-3 fw-bold mb-4 text-shadow">Welcome to UniHub</h1>
-            <p className="lead mb-4" style={{ fontSize: '1.5rem', fontWeight: '500', color: '#fff', textShadow: '1px 1px 3px rgba(0, 0, 0, 0.2)' }}>
-              Connect, Create, and Participate in your university community
+          <div className="section-header text-center">
+            <h2 className="section-title">Empowering University Communities</h2>
+            <p className="section-subtitle">
+              Connect with peers, discover opportunities, and grow together in your academic journey
             </p>
-            <div>
-              <Button 
-                as={Link} 
-                to="/register" 
-                variant="light" 
-                size="lg" 
-                className="me-3"
-                style={{ fontWeight: '700', padding: '0.875rem 2rem', fontSize: '1.125rem', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)' }}
-              >
-                Get Started
-              </Button>
-              <Button 
-                as={Link} 
-                to="/login" 
-                size="lg"
-                style={{ 
-                  fontWeight: '700', 
-                  padding: '0.875rem 2rem', 
-                  fontSize: '1.125rem',
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  border: '2px solid white',
-                  color: 'white',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-                }}
-              >
-                Login
-              </Button>
-            </div>
           </div>
         </Container>
-      </div>
+      </section>
 
-      {/* Features Section */}
-      <Container className="py-5">
-        <h2 className="text-center mb-4">What is UniHub?</h2>
-        <Row className="g-4">
-          <Col md={3}>
-            <Card className="h-100 text-center">
-              <Card.Body>
-                <div className="display-4 mb-3">📅</div>
-                <Card.Title>Events</Card.Title>
-                <Card.Text>
-                  Create and participate in university events. Earn points as organizer, volunteer, or attendee.
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="h-100 text-center">
-              <Card.Body>
-                <div className="display-4 mb-3">📝</div>
-                <Card.Title>Blogs & Opportunities</Card.Title>
-                <Card.Text>
-                  Share articles, internships, and job opportunities with your peers.
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="h-100 text-center">
-              <Card.Body>
-                <div className="display-4 mb-3">🏆</div>
-                <Card.Title>Points & Badges</Card.Title>
-                <Card.Text>
-                  Earn points for contributions and unlock achievement badges as you level up.
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="h-100 text-center">
-              <Card.Body>
-                <div className="display-4 mb-3">📊</div>
-                <Card.Title>Leaderboard</Card.Title>
-                <Card.Text>
-                  Compete with peers and see top contributors across universities.
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-
-      {/* Recent Events Preview */}
-      <div className="bg-light py-5">
+      {/* Key Features Section */}
+      <section className="section-features">
         <Container>
-          <h2 className="text-center mb-4">Recent Events</h2>
           <Row className="g-4">
-            {recentEvents.map(event => (
-              <Col md={4} key={event.eventId}>
-                <Card 
-                  as={Link} 
-                  to={`/events/${event.eventId}`}
-                  className="card-hover-lift text-decoration-none"
-                  style={{ cursor: 'pointer' }}
-                >
-                  <Card.Body>
-                    <Card.Title>{event.title}</Card.Title>
-                    {new Date(event.endDate) < new Date() && (
-                      <Badge bg="dark" className="mb-2">
-                        Event Completed
-                      </Badge>
-                    )}
-                    <Card.Text>{truncateText(event.description, 100)}</Card.Text>
-                    <div className="text-muted small">
-                      📍 {event.location} • {formatDate(event.startDate)}
-                    </div>
-                  </Card.Body>
-                </Card>
+            <Col md={6} lg={3}>
+              <FeatureCard
+                icon="📅"
+                title="Events & Activities"
+                description="Create and participate in university events. Earn points as organizer, volunteer, or attendee."
+                delay={0}
+              />
+            </Col>
+            <Col md={6} lg={3}>
+              <FeatureCard
+                icon="📝"
+                title="Blogs & Opportunities"
+                description="Share articles, internships, and job opportunities with your peers and community."
+                delay={100}
+              />
+            </Col>
+            <Col md={6} lg={3}>
+              <FeatureCard
+                icon="🏆"
+                title="Points & Badges"
+                description="Earn points for contributions and unlock achievement badges as you level up."
+                delay={200}
+              />
+            </Col>
+            <Col md={6} lg={3}>
+              <FeatureCard
+                icon="📊"
+                title="University Leaderboards"
+                description="Compete with peers and see top contributors across different universities."
+                delay={300}
+              />
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
+      {/* Powerful Features Section */}
+      <section className="section-powerful-features">
+        <Container>
+          <div className="section-header text-center">
+            <h2 className="section-title">Powerful Features</h2>
+            <p className="section-subtitle">
+              Everything you need to engage, collaborate, and succeed
+            </p>
+          </div>
+          <Row className="g-4">
+            <Col md={6}>
+              <div className="feature-box" style={{ animationDelay: '0ms' }}>
+                <div className="feature-box-icon">📅</div>
+                <h3 className="feature-box-title">Event Management</h3>
+                <p className="feature-box-description">
+                  Create, manage, and participate in university events. Track attendance,
+                  manage volunteers, and earn points for every contribution.
+                </p>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="feature-box" style={{ animationDelay: '100ms' }}>
+                <div className="feature-box-icon">📝</div>
+                <h3 className="feature-box-title">Blog & Opportunity Publishing</h3>
+                <p className="feature-box-description">
+                  Share knowledge, post internships, and publish job opportunities.
+                  Help your peers discover valuable resources and grow together.
+                </p>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="feature-box" style={{ animationDelay: '200ms' }}>
+                <div className="feature-box-icon">🎮</div>
+                <h3 className="feature-box-title">Gamification System</h3>
+                <p className="feature-box-description">
+                  Engage with a comprehensive points and badges system. Level up,
+                  unlock achievements, and showcase your contributions.
+                </p>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="feature-box" style={{ animationDelay: '300ms' }}>
+                <div className="feature-box-icon">👥</div>
+                <h3 className="feature-box-title">Role-based Dashboards</h3>
+                <p className="feature-box-description">
+                  Tailored dashboards for students, supervisors, and admins.
+                  Each role gets the tools they need to succeed.
+                </p>
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
+      {/* Upcoming Events Section */}
+      <section className="section-events">
+        <Container>
+          <div className="section-header-with-action">
+            <h2 className="section-title">Upcoming Events</h2>
+            <Button
+              as={Link}
+              to="/events"
+              variant="outline-primary"
+              className="view-all-btn"
+            >
+              View All
+            </Button>
+          </div>
+          <Row className="g-4 mt-1">
+            {upcomingEvents.map((event, index) => (
+              <Col md={6} lg={4} key={index}>
+                <EventCard {...event} delay={index * 100} />
               </Col>
             ))}
           </Row>
-          <div className="text-center mt-4">
-            <Button as={Link} to="/events" variant="primary">
-              View All Events
+        </Container>
+      </section>
+
+      {/* Latest Opportunities Section */}
+      <section className="section-opportunities">
+        <Container>
+          <div className="section-header-with-action">
+            <h2 className="section-title">Latest Opportunities</h2>
+            <Button
+              as={Link}
+              to="/blogs"
+              variant="outline-primary"
+              className="view-all-btn"
+            >
+              View All
             </Button>
           </div>
+          <Row className="g-4 mt-1">
+            {latestOpportunities.map((opportunity, index) => (
+              <Col md={6} lg={4} key={index}>
+                <OpportunityCard {...opportunity} delay={index * 100} />
+              </Col>
+            ))}
+          </Row>
         </Container>
-      </div>
+      </section>
 
-      {/* Recent Blogs Preview */}
-      <Container className="py-5">
-        <h2 className="text-center mb-4">Recent Blogs</h2>
-        <Row className="g-4">
-          {recentBlogs.map(blog => (
-            <Col md={4} key={blog.blogId}>
-              <Card 
-                as={Link} 
-                to={`/blogs/${blog.blogId}`}
-                className="card-hover-lift text-decoration-none"
-                style={{ cursor: 'pointer' }}
-              >
-                <Card.Body>
-                  <Badge bg="info" className="mb-2">{blog.category}</Badge>
-                  <Card.Title>{blog.title}</Card.Title>
-                  <Card.Text>{truncateText(blog.content, 100)}</Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-        <div className="text-center mt-4">
-          <Button as={Link} to="/blogs" variant="primary">
-            View All Blogs
-          </Button>
-        </div>
-      </Container>
-
-      {/* Leaderboard Sneak Peek */}
-      <div className="bg-light py-5">
+      {/* Top Contributors Section */}
+      <section className="section-leaderboard">
         <Container>
-          <h2 className="text-center mb-4">Top Contributors</h2>
+          <div className="section-header text-center">
+            <h2 className="section-title">Top Contributors</h2>
+            <p className="section-subtitle">
+              Celebrating our most active community members
+            </p>
+          </div>
           <Row className="justify-content-center">
-            <Col md={6}>
-              <Card>
-                <Card.Body>
-                  {topMembers.map((member, index) => (
-                    <div key={member.userId} className="d-flex align-items-center mb-3">
-                      <div className="me-3">
-                        <h2 className="text-muted mb-0">#{index + 1}</h2>
-                      </div>
-                      <div className="flex-grow-1">
-                        <strong>{member.name}</strong>
-                        <div className="text-muted small">{member.university?.name}</div>
-                      </div>
-                      <div>
-                        <Badge bg="primary" pill>{member.points} pts</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </Card.Body>
-              </Card>
-              <div className="text-center mt-3">
-                <Button as={Link} to="/leaderboard" variant="outline-primary">
+            <Col lg={8}>
+              <LeaderboardPreview contributors={topContributors} />
+              <div className="text-center mt-4">
+                <Button
+                  as={Link}
+                  to="/leaderboard"
+                  variant="primary"
+                  size="lg"
+                  className="view-leaderboard-btn"
+                >
                   View Full Leaderboard
                 </Button>
               </div>
             </Col>
           </Row>
         </Container>
-      </div>
+      </section>
 
-      {/* Call to Action */}
-      <Container className="py-5 text-center">
-        <h2 className="mb-4">Join Your University Portal Today!</h2>
-        <p className="lead mb-4">
-          Start participating, earning points, and climbing the leaderboard
-        </p>
-        <Button as={Link} to="/register" variant="primary" size="lg">
-          Register Now
-        </Button>
-      </Container>
+      {/* Call to Action Section */}
+      <section className="section-cta">
+        <Container>
+          <div className="cta-content text-center">
+            <h2 className="cta-title">Join Your University Community Today</h2>
+            <p className="cta-description">
+              Start your journey towards academic excellence and community engagement
+            </p>
+            <div className="cta-buttons">
+              <Button
+                as={Link}
+                to="/register"
+                variant="light"
+                size="lg"
+                className="cta-btn-primary"
+              >
+                Register Now
+              </Button>
+              <Button
+                as={Link}
+                to="/login"
+                variant="outline-light"
+                size="lg"
+                className="cta-btn-secondary"
+              >
+                Login
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </section>
     </div>
   );
 };

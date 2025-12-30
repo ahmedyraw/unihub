@@ -55,7 +55,7 @@ const Badges = () => {
   }
 
   return (
-    <Container className="py-4">
+    <Container className="py-4" style={{ marginTop: '100px' }}>
       <Row className="mb-4">
         <Col>
           <h2>🏆 Badges</h2>

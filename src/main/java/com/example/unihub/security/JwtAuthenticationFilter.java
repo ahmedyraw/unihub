@@ -2,6 +2,7 @@ package com.example.unihub.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -26,14 +28,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
         
-        final String authorizationHeader = request.getHeader("Authorization");
-
-        String email = null;
         String jwt = null;
+        String email = null;
 
-        // Extract JWT token from Authorization header
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
+        // Try to get JWT from cookie first
+        if (request.getCookies() != null) {
+            jwt = Arrays.stream(request.getCookies())
+                .filter(cookie -> "auth_token".equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+        }
+
+        // Fallback to Authorization header for backward compatibility
+        if (jwt == null) {
+            final String authorizationHeader = request.getHeader("Authorization");
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                jwt = authorizationHeader.substring(7);
+            }
+        }
+
+        // Extract email from JWT
+        if (jwt != null) {
             try {
                 email = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {

@@ -2,6 +2,7 @@ package com.example.unihub.config;
 
 import com.example.unihub.security.CustomUserDetailsService;
 import com.example.unihub.security.JwtAuthenticationFilter;
+import com.example.unihub.security.RateLimitingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -27,18 +31,23 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimitingFilter rateLimitingFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configure(http))
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .authorizeHttpRequests(auth -> auth
                 // Preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // Public endpoints
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", 
+                                "/api/auth/reset-password", "/api/auth/validate-reset-token").permitAll()
+                .requestMatchers("/api/auth/session").authenticated()
+                .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/gamification/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/admin/universities").permitAll()
@@ -81,6 +90,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authenticationProvider(authenticationProvider())
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Card, Table, Badge, Button, Form, Row, Col, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import reportService from '../services/reportService';
-import { formatDate, getTimeAgo } from '../utils/helpers';
+import { getTimeAgo } from '../utils/helpers';
 
 const Reports = () => {
   const [eventReports, setEventReports] = useState([]);
@@ -67,6 +67,16 @@ const Reports = () => {
   const filteredEventReports = filter === 'BLOG' ? [] : eventReports;
   const filteredBlogReports = filter === 'EVENT' ? [] : blogReports;
 
+  const resolveReportDate = (report) =>
+    report?.createdAt || report?.created_at || report?.reportedAt || report?.reported_at;
+
+  const resolveReporterName = (report) =>
+    report?.reportedBy?.name ||
+    report?.reportedByName ||
+    report?.reported_by?.name ||
+    report?.reportedBy?.email ||
+    'Unknown';
+
   return (
     <Container className="py-4">
       {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
@@ -74,7 +84,7 @@ const Reports = () => {
 
       <Row className="mb-4">
         <Col>
-          <h2>📋 Content Reports</h2>
+          <h2>🚨 Content Reports</h2>
           <p className="text-muted">Manage reported events and blogs</p>
         </Col>
       </Row>
@@ -135,22 +145,33 @@ const Reports = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredEventReports.map((report) => (
+                    {filteredEventReports.map((report) => {
+                      const eventId = report.event?.eventId ?? report.eventId;
+                      const eventTitle = report.event?.title ?? report.eventTitle ?? 'Event';
+                      const eventCreatorName = report.event?.creator?.name ?? report.eventCreatorName ?? 'Unknown';
+                      const reportedByName = resolveReporterName(report);
+                      const createdAt = resolveReportDate(report);
+
+                      return (
                       <tr key={report.reportId}>
                         <td>
-                          <Link to={`/events/${report.event?.eventId}`} style={{ fontWeight: '600' }}>
-                            {report.event?.title}
-                          </Link>
-                          <div className="text-muted small">by {report.event?.creator?.name}</div>
+                          {eventId ? (
+                            <Link to={`/events/${eventId}`} style={{ fontWeight: '600' }}>
+                              {eventTitle}
+                            </Link>
+                          ) : (
+                            <span style={{ fontWeight: '600' }}>{eventTitle}</span>
+                          )}
+                          <div className="text-muted small">by {eventCreatorName}</div>
                         </td>
-                        <td>{report.reportedBy?.name}</td>
+                        <td>{reportedByName}</td>
                         <td>
                           <div style={{ maxWidth: '300px' }}>
                             {report.reason}
                           </div>
                         </td>
                         <td>
-                          <small>{getTimeAgo(report.createdAt)}</small>
+                          <small>{createdAt ? getTimeAgo(createdAt) : 'N/A'}</small>
                         </td>
                         <td>
                           <Badge bg={
@@ -181,7 +202,8 @@ const Reports = () => {
                           )}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </Table>
               </Card.Body>
@@ -207,22 +229,33 @@ const Reports = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredBlogReports.map((report) => (
+                    {filteredBlogReports.map((report) => {
+                      const blogId = report.blog?.blogId ?? report.blogId;
+                      const blogTitle = report.blog?.title ?? report.blogTitle ?? 'Blog';
+                      const blogAuthorName = report.blog?.author?.name ?? report.blogAuthorName ?? 'Unknown';
+                      const reportedByName = resolveReporterName(report);
+                      const createdAt = resolveReportDate(report);
+
+                      return (
                       <tr key={report.reportId}>
                         <td>
-                          <Link to={`/blogs/${report.blog?.blogId}`} style={{ fontWeight: '600' }}>
-                            {report.blog?.title}
-                          </Link>
-                          <div className="text-muted small">by {report.blog?.author?.name}</div>
+                          {blogId ? (
+                            <Link to={`/blogs/${blogId}`} style={{ fontWeight: '600' }}>
+                              {blogTitle}
+                            </Link>
+                          ) : (
+                            <span style={{ fontWeight: '600' }}>{blogTitle}</span>
+                          )}
+                          <div className="text-muted small">by {blogAuthorName}</div>
                         </td>
-                        <td>{report.reportedBy?.name}</td>
+                        <td>{reportedByName}</td>
                         <td>
                           <div style={{ maxWidth: '300px' }}>
                             {report.reason}
                           </div>
                         </td>
                         <td>
-                          <small>{getTimeAgo(report.createdAt)}</small>
+                          <small>{createdAt ? getTimeAgo(createdAt) : 'N/A'}</small>
                         </td>
                         <td>
                           <Badge bg={
@@ -253,7 +286,8 @@ const Reports = () => {
                           )}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </Table>
               </Card.Body>

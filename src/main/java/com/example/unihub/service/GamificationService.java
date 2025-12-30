@@ -51,6 +51,8 @@ public class GamificationService {
         
         // 4. Send WebSocket update for leaderboard
         sendLeaderboardUpdate();
+        // 5. Send dashboard update for instant UI refresh
+        sendDashboardUpdate(user.getUserId());
     }
 
     /**
@@ -79,6 +81,8 @@ public class GamificationService {
         
         // 4. Send WebSocket update for leaderboard
         sendLeaderboardUpdate();
+        // 5. Send dashboard update for instant UI refresh
+        sendDashboardUpdate(user.getUserId());
     }
 
     /**

@@ -32,6 +32,9 @@ public class CreateEventRequest {
     @NotBlank(message = "Type is required")
     private String type;
     
+    // University ID for the event (if not provided, defaults to creator's university)
+    private Long universityId;
+    
     // Capacity fields (optional - null means unlimited)
     private Integer maxOrganizers;
     private Integer maxVolunteers;

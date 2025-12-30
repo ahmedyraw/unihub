@@ -1,5 +1,4 @@
 import api from './api';
-import { STORAGE_KEYS } from '../utils/constants';
 
 const authService = {
   /**
@@ -7,10 +6,7 @@ const authService = {
    */
   register: async (data) => {
     const response = await api.post('/auth/register', data);
-    if (response.data.token) {
-      localStorage.setItem(STORAGE_KEYS.TOKEN, response.data.token);
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data));
-    }
+    // Token is now in httpOnly cookie, just return user data
     return response.data;
   },
 
@@ -19,50 +15,42 @@ const authService = {
    */
   login: async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
-    if (response.data.token) {
-      localStorage.setItem(STORAGE_KEYS.TOKEN, response.data.token);
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data));
-    }
+    // Token is now in httpOnly cookie, just return user data
     return response.data;
   },
 
   /**
    * Logout user
    */
-  logout: () => {
-    localStorage.removeItem(STORAGE_KEYS.TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER);
+  logout: async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    // Redirect to login
     window.location.href = '/login';
   },
 
   /**
-   * Get current user from localStorage
+   * Check if user is authenticated by making a test request
    */
-  getCurrentUser: () => {
-    const userStr = localStorage.getItem(STORAGE_KEYS.USER);
-    return userStr ? JSON.parse(userStr) : null;
+  isAuthenticated: async () => {
+    try {
+      // Make a simple request to check if cookie is valid
+      await api.get('/auth/check');
+      return true;
+    } catch (error) {
+      return false;
+    }
   },
 
   /**
-   * Get token from localStorage
+   * Check session and get current user
    */
-  getToken: () => {
-    return localStorage.getItem(STORAGE_KEYS.TOKEN);
-  },
-
-  /**
-   * Check if user is authenticated
-   */
-  isAuthenticated: () => {
-    return !!localStorage.getItem(STORAGE_KEYS.TOKEN);
-  },
-
-  /**
-   * Check if user has specific role
-   */
-  hasRole: (role) => {
-    const user = authService.getCurrentUser();
-    return user && user.role === role;
+  checkSession: async () => {
+    const response = await api.get('/auth/session');
+    return response.data;
   },
 
   /**

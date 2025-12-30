@@ -1,5 +1,7 @@
 package com.example.unihub.controller;
 
+import com.example.unihub.dto.response.BlogReportResponse;
+import com.example.unihub.dto.response.EventReportResponse;
 import com.example.unihub.enums.ReportStatus;
 import com.example.unihub.model.BlogReport;
 import com.example.unihub.model.EventReport;
@@ -64,7 +66,7 @@ public class ReportController {
      * GET /api/reports/blogs
      */
     @GetMapping("/blogs")
-    public ResponseEntity<List<BlogReport>> getBlogReports(
+    public ResponseEntity<List<BlogReportResponse>> getBlogReports(
             @RequestParam(required = false) ReportStatus status,
             @RequestParam(required = false, defaultValue = "false") boolean pending) {
         
@@ -82,7 +84,7 @@ public class ReportController {
      * GET /api/reports/events
      */
     @GetMapping("/events")
-    public ResponseEntity<List<EventReport>> getEventReports(
+    public ResponseEntity<List<EventReportResponse>> getEventReports(
             @RequestParam(required = false) ReportStatus status,
             @RequestParam(required = false, defaultValue = "false") boolean pending) {
         

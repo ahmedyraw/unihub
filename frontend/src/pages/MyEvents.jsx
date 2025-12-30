@@ -118,8 +118,8 @@ const MyEvents = () => {
                           </Button>
                         )}
                         
-                        {/* Allow cancellation for APPROVED events (organizer or admin) */}
-                        {event.status === 'APPROVED' && (user.role === USER_ROLES.ADMIN || event.creator?.userId === user.userId) && (
+                        {/* Allow cancellation for APPROVED events (admin or supervisor only) */}
+                        {event.status === 'APPROVED' && (user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SUPERVISOR) && (
                           <Button 
                             size="sm" 
                             variant="warning"

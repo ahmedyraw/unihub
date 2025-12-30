@@ -21,7 +21,9 @@ public class UniversityService {
      * Get all universities
      */
     public List<University> getAllUniversities() {
-        return universityRepository.findAll();
+        return universityRepository.findAll().stream()
+            .filter(university -> !"Example University".equalsIgnoreCase(university.getName()))
+            .toList();
     }
 
     /**

@@ -15,6 +15,7 @@ const CreateEvent = () => {
     startDate: '',
     endDate: '',
     type: 'Workshop',
+    universityId: '', // University ID for the event (dropdown selection)
     maxOrganizers: '',
     maxVolunteers: '',
     maxAttendees: '',
@@ -70,6 +71,7 @@ const CreateEvent = () => {
       // Prepare data - convert empty strings to null for optional numeric fields
       const eventData = {
         ...formData,
+        universityId: formData.universityId ? parseInt(formData.universityId) : null,
         maxOrganizers: formData.maxOrganizers ? parseInt(formData.maxOrganizers) : null,
         maxVolunteers: formData.maxVolunteers ? parseInt(formData.maxVolunteers) : null,
         maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : null,
@@ -78,6 +80,7 @@ const CreateEvent = () => {
         attendeePoints: parseInt(formData.attendeePoints)
       };
       
+      console.log('Creating event with universityId:', eventData.universityId);
       await eventService.createEvent(eventData);
       navigate('/my-events');
     } catch (err) {
@@ -131,22 +134,37 @@ const CreateEvent = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Location (University) *</Form.Label>
+              <Form.Label>University *</Form.Label>
               <Form.Select
-                name="location"
-                value={formData.location}
+                name="universityId"
+                value={formData.universityId}
                 onChange={handleChange}
                 required
               >
                 <option value="">Select a university...</option>
                 {universities.map(uni => (
-                  <option key={uni.universityId} value={uni.name}>
+                  <option key={uni.universityId} value={uni.universityId}>
                     {uni.name}
                   </option>
                 ))}
               </Form.Select>
               <Form.Text className="text-muted">
-                Events must be located at a registered university
+                Select the university where this event will take place
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Location (Venue) *</Form.Label>
+              <Form.Control
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                required
+                placeholder="e.g., Main Auditorium, Building A"
+              />
+              <Form.Text className="text-muted">
+                Specific venue or building at the selected university
               </Form.Text>
             </Form.Group>
 

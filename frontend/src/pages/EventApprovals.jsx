@@ -9,6 +9,7 @@ const EventApprovals = () => {
   const { user } = useAuth();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState(null);
 
   useEffect(() => {
     loadPendingEvents();
@@ -27,22 +28,30 @@ const EventApprovals = () => {
   };
 
   const handleApprove = async (id) => {
+    setProcessingId(id);
     try {
       await eventService.approveEvent(id);
-      loadPendingEvents();
+      setEvents(events.filter(e => e.eventId !== id));
     } catch (error) {
       console.error('Failed to approve event:', error);
+      alert('Failed to approve event. Please try again.');
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleReject = async (id) => {
     const reason = prompt('Rejection reason:');
     if (!reason) return;
+    setProcessingId(id);
     try {
       await eventService.rejectEvent(id, reason);
-      loadPendingEvents();
+      setEvents(events.filter(e => e.eventId !== id));
     } catch (error) {
       console.error('Failed to reject event:', error);
+      alert('Failed to reject event. Please try again.');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -83,17 +92,19 @@ const EventApprovals = () => {
                           size="sm" 
                           variant="success" 
                           onClick={() => handleApprove(event.eventId)}
+                          disabled={processingId === event.eventId}
                           style={{ fontWeight: '600', minWidth: '90px' }}
                         >
-                          ✅ Approve
+                          {processingId === event.eventId ? '⏳ Processing...' : '✅ Approve'}
                         </Button>
                         <Button 
                           size="sm" 
                           variant="danger" 
                           onClick={() => handleReject(event.eventId)}
+                          disabled={processingId === event.eventId}
                           style={{ fontWeight: '600', minWidth: '90px' }}
                         >
-                          ❌ Reject
+                          {processingId === event.eventId ? '⏳ Processing...' : '❌ Reject'}
                         </Button>
                       </div>
                     </td>

@@ -7,12 +7,13 @@ import eventService from '../services/eventService';
 import blogService from '../services/blogService';
 import gamificationService from '../services/gamificationService';
 import notificationService from '../services/notificationService';
+import userService from '../services/userService';
 import BadgeModal from '../components/common/BadgeModal';
 import { formatDate, formatPoints, getBadgeColor, getTimeAgo } from '../utils/helpers';
 import { USER_ROLES } from '../utils/constants';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { badgeEarned, dashboardUpdated, clearBadgeNotification } = useWebSocket();
   const [myEvents, setMyEvents] = useState([]);
   const [myBlogs, setMyBlogs] = useState([]);
@@ -42,6 +43,21 @@ const Dashboard = () => {
     console.log('Is Student?', user?.role === USER_ROLES.STUDENT);
     
     try {
+      let resolvedUser = user;
+      if (user?.userId) {
+        const refreshedUser = await userService.getCurrentUser();
+        if (refreshedUser) {
+          const normalizedUser = {
+            ...refreshedUser,
+            universityId: refreshedUser.university?.universityId ?? refreshedUser.universityId,
+            universityName: refreshedUser.university?.name ?? refreshedUser.universityName,
+            currentBadgeName: refreshedUser.currentBadge?.name ?? refreshedUser.currentBadgeName
+          };
+          updateUser({ ...user, ...normalizedUser, token: user?.token });
+          resolvedUser = { ...user, ...normalizedUser };
+        }
+      }
+
       // Load user's events
       console.log('Fetching my events from API...');
       const events = await eventService.getMyEvents();
@@ -62,7 +78,7 @@ const Dashboard = () => {
       // Load top 3 members for leaderboard snippet
       const members = await gamificationService.getTopMembers(
         'UNIVERSITY',
-        user.universityId,
+        resolvedUser?.universityId,
         3
       );
       setTopMembers(Array.isArray(members) ? members : []);
@@ -75,7 +91,7 @@ const Dashboard = () => {
       setNotifications(sortedNotifs);
 
       // Load pending approvals for supervisors
-      if (user.role === USER_ROLES.SUPERVISOR || user.role === USER_ROLES.ADMIN) {
+      if (resolvedUser?.role === USER_ROLES.SUPERVISOR || resolvedUser?.role === USER_ROLES.ADMIN) {
         const [pendingEvents, pendingBlogs] = await Promise.all([
           eventService.getAllEvents({ status: 'PENDING' }),
           blogService.getPendingBlogs()
@@ -113,7 +129,7 @@ const Dashboard = () => {
   }
 
   return (
-    <Container className="py-4 dashboard-page">
+    <Container className="py-4 dashboard-page" style={{ marginTop: '100px' }}>
       {/* Badge Earned Modal */}
       <BadgeModal
         badge={badgeEarned}
@@ -142,8 +158,8 @@ const Dashboard = () => {
       </Row>
 
       {/* Stats Cards */}
-      <Row className="g-4 mb-4">
-        <Col md={3}>
+      <Row className="g-3 mb-4">
+        <Col xs={6} md={3}>
           <Card className="h-100 text-center">
             <Card.Body>
               <div className="display-6 mb-2">🏆</div>
@@ -152,7 +168,7 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col xs={6} md={3}>
           <Card className="h-100 text-center">
             <Card.Body>
               <div className="display-6 mb-2">🎖️</div>
@@ -165,7 +181,7 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col xs={6} md={3}>
           <Card className="h-100 text-center">
             <Card.Body>
               <div className="display-6 mb-2">📅</div>
@@ -174,7 +190,7 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col xs={6} md={3}>
           <Card className="h-100 text-center">
             <Card.Body>
               <div className="display-6 mb-2">📝</div>
@@ -240,9 +256,9 @@ const Dashboard = () => {
         </>
       )}
 
-      <Row className="g-4">
+      <Row className="g-3">
         {/* My Recent Events */}
-        <Col md={6}>
+        <Col xs={12} lg={6}>
             <Card style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', border: 'none', borderRadius: '1rem', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
             <Card.Header style={{ backgroundColor: 'var(--bg-tertiary)', borderBottom: '2px solid var(--border-color)', padding: '1rem' }}>
               <div className="d-flex justify-content-between align-items-center">
@@ -260,14 +276,13 @@ const Dashboard = () => {
                       key={event.eventId} 
                       as={Link}
                       to={`/events/${event.eventId}`}
+                      className="list-group-item-action hover-card"
                       style={{ 
                         padding: '1rem', 
                         borderBottom: '1px solid var(--border-color)',
                         cursor: 'pointer',
-                        textDecoration: 'none',
-                        color: 'inherit'
+                        textDecoration: 'none'
                       }}
-                      className="list-group-item-action"
                     >
                       <div className="d-flex justify-content-between align-items-start">
                         <div style={{ flex: 1 }}>
@@ -300,7 +315,7 @@ const Dashboard = () => {
         </Col>
 
         {/* My Recent Blogs */}
-        <Col md={6}>
+        <Col xs={12} lg={6}>
             <Card style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', border: 'none', borderRadius: '1rem', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
             <Card.Header style={{ backgroundColor: 'var(--bg-tertiary)', borderBottom: '2px solid var(--border-color)', padding: '1rem' }}>
               <div className="d-flex justify-content-between align-items-center">
@@ -318,14 +333,13 @@ const Dashboard = () => {
                       key={blog.blogId} 
                       as={Link}
                       to={`/blogs/${blog.blogId}`}
+                      className="list-group-item-action hover-card"
                       style={{ 
                         padding: '1rem', 
                         borderBottom: '1px solid var(--border-color)',
                         cursor: 'pointer',
-                        textDecoration: 'none',
-                        color: 'inherit'
+                        textDecoration: 'none'
                       }}
-                      className="list-group-item-action"
                     >
                       <div className="d-flex justify-content-between align-items-start">
                         <div style={{ flex: 1 }}>
@@ -359,7 +373,7 @@ const Dashboard = () => {
         </Col>
 
         {/* Leaderboard Snippet */}
-        <Col md={6}>
+        <Col xs={12} lg={6}>
             <Card style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', border: 'none', borderRadius: '1rem', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
             <Card.Header style={{ backgroundColor: 'var(--bg-tertiary)', borderBottom: '2px solid var(--border-color)', padding: '1rem' }}>
               <div className="d-flex justify-content-between align-items-center">
@@ -371,7 +385,7 @@ const Dashboard = () => {
             </Card.Header>
             <Card.Body>
               {topMembers && topMembers.length > 0 ? topMembers.map((member, index) => (
-                <div key={member.userId} className="d-flex align-items-center mb-3">
+                <div key={member.userId} className="d-flex align-items-center mb-3 hover-card" style={{ cursor: 'pointer', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>
                   <div className="me-3">
                     <h4 className="text-muted mb-0">#{index + 1}</h4>
                   </div>
@@ -397,7 +411,7 @@ const Dashboard = () => {
         </Col>
 
         {/* Recent Notifications */}
-        <Col md={6}>
+        <Col xs={12} lg={6}>
             <Card style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', border: 'none', borderRadius: '1rem', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
             <Card.Header style={{ backgroundColor: 'var(--bg-tertiary)', borderBottom: '2px solid var(--border-color)', padding: '1rem' }}>
               <div className="d-flex justify-content-between align-items-center">
@@ -411,7 +425,7 @@ const Dashboard = () => {
               {notifications.length > 0 ? (
                 <ListGroup variant="flush">
                   {notifications.map(notif => (
-                    <ListGroup.Item key={notif.notificationId}>
+                    <ListGroup.Item key={notif.notificationId} className="hover-card" style={{ cursor: 'pointer' }}>
                       <div className="d-flex align-items-start">
                         <div className="me-2">{notif.type === 'BADGE_EARNED' ? '🏆' : '🔔'}</div>
                         <div className="flex-grow-1">
@@ -430,30 +444,6 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      {/* Quick Actions Sidebar - Desktop Only */}
-      <div className="quick-actions-sidebar">
-        <h6 className="mb-3 text-center" style={{ fontWeight: '700', fontSize: '0.9rem' }}>⚡ Quick Actions</h6>
-        <Button as={Link} to="/events/new" variant="primary" size="sm" style={{ fontWeight: '600' }}>
-          📅 Event
-        </Button>
-        <Button as={Link} to="/blogs/new" variant="success" size="sm" style={{ fontWeight: '600' }}>
-          📝 Blog
-        </Button>
-        <Button as={Link} to="/events" variant="outline-primary" size="sm" style={{ fontWeight: '600' }}>
-          🔍 Events
-        </Button>
-        <Button as={Link} to="/blogs" variant="outline-success" size="sm" style={{ fontWeight: '600' }}>
-          🔍 Blogs
-        </Button>
-        <Button as={Link} to="/badges" variant="outline-warning" size="sm" style={{ fontWeight: '600' }}>
-          🏆 Badges
-        </Button>
-        {(user.role === USER_ROLES.SUPERVISOR || user.role === USER_ROLES.ADMIN) && (
-          <Button as={Link} to="/reports" variant="outline-danger" size="sm" style={{ fontWeight: '600' }}>
-            📊 Reports
-          </Button>
-        )}
-      </div>
     </Container>
   );
 };

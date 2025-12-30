@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Badge, Form } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
@@ -15,71 +15,88 @@ const Events = () => {
     status: user && (user.role === USER_ROLES.ADMIN || user.role === USER_ROLES.SUPERVISOR) ? '' : 'APPROVED',
     type: '',
     search: '',
+    // IMPORTANT: universityId uses dropdown selection, NOT user's registered university
+    // Empty string = "All Universities", otherwise uses selected university ID from dropdown
     universityId: '',
     timeFilter: 'ALL' // ALL, ACTIVE, FUTURE, COMPLETED
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadUniversities();
-    loadEvents();
-  }, []);
-
-  useEffect(() => {
-    loadEvents();
-  }, [filters.status, filters.type, filters.universityId, filters.timeFilter]);
-
   const loadUniversities = async () => {
     try {
       const data = await adminService.getUniversities();
-      setUniversities(Array.isArray(data) ? data : []);
+      // Filter out "Example University"
+      const filtered = Array.isArray(data) ? data.filter(uni => uni.name !== 'Example University') : [];
+      setUniversities(filtered);
     } catch (error) {
       console.error('Failed to load universities:', error);
       setUniversities([]);
     }
   };
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
+      // Send dropdown-selected universityId to backend (independent of user's university)
       const filterParams = {
         status: filters.status || undefined,
-        type: filters.type || undefined
+        universityId: filters.universityId || undefined
       };
       
+      console.log('🔍 Loading events with filters:', filterParams);
       let data = await eventService.getAllEvents(filterParams);
+      console.log('📦 Received events from backend:', data.length, 'events');
       
-      // Filter by university if selected
+      // Ensure each event has universityId for filtering
+      data = Array.isArray(data) ? data.map(event => ({
+        ...event,
+        universityId: event.university?.universityId || event.universityId
+      })) : [];
+      
+      console.log('✅ After normalization:', data.length, 'events');
       if (filters.universityId) {
-        data = Array.isArray(data) ? data.filter(event => 
-          event.university?.universityId?.toString() === filters.universityId
-        ) : [];
+        console.log('🎯 Filtering for universityId:', filters.universityId);
+        console.log('📋 Sample event universityIds:', data.slice(0, 3).map(e => ({
+          title: e.title,
+          universityId: e.universityId,
+          universityName: e.university?.name
+        })));
+      }
+      
+      // Client-side type filtering (backend doesn't support type parameter)
+      if (filters.type) {
+        data = data.filter(event => event.type === filters.type);
+        console.log('🔧 After type filter:', data.length, 'events');
       }
       
       // Role-based filtering
       if (user && user.role === USER_ROLES.STUDENT) {
         // Students only see approved events
-        data = Array.isArray(data) ? data.filter(event => event.status === 'APPROVED') : [];
+        data = data.filter(event => event.status === 'APPROVED');
+        console.log('👤 After role filter (STUDENT):', data.length, 'events');
       }
       
       // Time-based filtering
       const now = new Date();
       if (filters.timeFilter === 'ACTIVE') {
-        data = Array.isArray(data) ? data.filter(event => 
+        data = data.filter(event => 
           new Date(event.startDate) <= now && new Date(event.endDate) >= now
-        ) : [];
+        );
+        console.log('⏰ After ACTIVE time filter:', data.length, 'events');
       } else if (filters.timeFilter === 'FUTURE') {
-        data = Array.isArray(data) ? data.filter(event => 
+        data = data.filter(event => 
           new Date(event.startDate) > now
-        ) : [];
+        );
+        console.log('⏰ After FUTURE time filter:', data.length, 'events');
       } else if (filters.timeFilter === 'COMPLETED') {
-        data = Array.isArray(data) ? data.filter(event => 
+        data = data.filter(event => 
           new Date(event.endDate) < now
-        ) : [];
+        );
+        console.log('⏰ After COMPLETED time filter:', data.length, 'events');
       }
       
       // Sort events: active/future first, then completed at bottom
-      data = Array.isArray(data) ? data.sort((a, b) => {
+      data = data.sort((a, b) => {
         const aEnded = new Date(a.endDate) < now;
         const bEnded = new Date(b.endDate) < now;
         
@@ -89,16 +106,25 @@ const Events = () => {
         const aTimestamp = new Date(a.createdAt || a.startDate || 0).getTime();
         const bTimestamp = new Date(b.createdAt || b.startDate || 0).getTime();
         return bTimestamp - aTimestamp;
-      }) : [];
+      });
       
-      setEvents(Array.isArray(data) ? data : []);
+      console.log('🎨 Final events to display:', data.length, 'events');
+      setEvents(data);
     } catch (error) {
-      console.error('Failed to load events:', error);
+      console.error('❌ Failed to load events:', error);
       setEvents([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.status, filters.type, filters.universityId, filters.timeFilter, user]);
+
+  useEffect(() => {
+    loadUniversities();
+  }, []);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
 
   const handleAdminDelete = async (eventId) => {
     if (!window.confirm('⚠️ Admin Action: Are you sure you want to delete this event?')) {
@@ -126,13 +152,15 @@ const Events = () => {
     }
   };
 
-  const filteredEvents = events.filter(event =>
-    event.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-    event.description.toLowerCase().includes(filters.search.toLowerCase())
-  );
+  const filteredEvents = events.filter(event => {
+    // Only apply search filter if search term is not empty
+    if (!filters.search) return true;
+    return event.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+           event.description.toLowerCase().includes(filters.search.toLowerCase());
+  });
 
   return (
-    <Container className="py-4">
+    <Container className="py-4" style={{ marginTop: '100px' }}>
       <Row className="mb-4">
         <Col>
           <div className="d-flex justify-content-between align-items-center">
@@ -169,6 +197,7 @@ const Events = () => {
             )}
             <Col md={3}>
               <Form.Label style={{ fontWeight: '600', fontSize: '0.95rem' }}>University</Form.Label>
+              {/* University filter uses dropdown selection, NOT user's registered university */}
               <Form.Select
                 value={filters.universityId}
                 onChange={(e) => setFilters({ ...filters, universityId: e.target.value })}
@@ -231,9 +260,9 @@ const Events = () => {
           </div>
         </div>
       ) : filteredEvents.length > 0 ? (
-        <Row className="g-4">
+        <Row className="g-3">
           {filteredEvents.map(event => (
-            <Col md={6} lg={4} key={event.eventId}>
+            <Col xs={12} sm={6} lg={4} key={event.eventId}>
               <Card className="h-100" style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', border: '1px solid var(--border-color)' }}>
                 <Card.Body>
                   <div className="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-1">

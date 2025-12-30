@@ -131,38 +131,33 @@ const Register = () => {
   };
 
   return (
-    <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh', paddingTop: '2rem', paddingBottom: '2rem' }}>
-      <Card style={{ maxWidth: '550px', width: '100%', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)', border: 'none', borderRadius: '1rem' }}>
-        <Card.Body style={{ padding: '2.5rem' }}>
+    <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh', marginTop: '150px', marginBottom: '100px' }}>
+      <Card style={{ maxWidth: '500px', width: '100%' }}>
+        <Card.Body className="p-5">
           <div className="text-center mb-4">
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '700', color: '#0d6efd', marginBottom: '0.5rem' }}>🎓 UniHub</h2>
-            <p className="text-muted" style={{ fontSize: '1.125rem' }}>Create your account</p>
+            <h2 style={{ fontSize: '2rem', fontWeight: '700' }}>🎓 UniHub</h2>
+            <p className="text-muted">Create your account</p>
           </div>
 
           {error && <Alert variant="danger">{error}</Alert>}
 
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label style={{ fontWeight: '600', fontSize: '1rem', color: '#212529' }}>Full Name</Form.Label>
+              <Form.Label>Full Name</Form.Label>
               <Form.Control
                 type="text"
                 name="name"
                 placeholder="John Doe"
                 value={formData.name}
                 onChange={handleChange}
+                className="custom-input"
                 required
                 minLength={2}
-                style={{ 
-                  padding: '0.75rem', 
-                  fontSize: '1rem',
-                  border: '2px solid #dee2e6',
-                  borderRadius: '0.5rem'
-                }}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label style={{ fontWeight: '600', fontSize: '1rem', color: '#212529' }}>University Email</Form.Label>
+              <Form.Label>University Email</Form.Label>
               <Form.Control
                 type="email"
                 name="email"
@@ -170,14 +165,9 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 onBlur={handleEmailBlur}
+                className="custom-input"
                 required
                 isInvalid={!!emailError}
-                style={{ 
-                  padding: '0.75rem', 
-                  fontSize: '1rem',
-                  border: `2px solid ${emailError ? '#dc3545' : '#dee2e6'}`,
-                  borderRadius: '0.5rem'
-                }}
               />
               {emailError && (
                 <Form.Text className="text-danger d-block mt-1">
@@ -187,18 +177,13 @@ const Register = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label style={{ fontWeight: '600', fontSize: '1rem', color: '#212529' }}>University</Form.Label>
+              <Form.Label>University</Form.Label>
               <Form.Select
                 name="universityId"
                 value={formData.universityId}
                 onChange={handleChange}
+                className="custom-input"
                 required
-                style={{ 
-                  padding: '0.75rem', 
-                  fontSize: '1rem',
-                  border: '2px solid #dee2e6',
-                  borderRadius: '0.5rem'
-                }}
               >
                 <option value="">Select University</option>
                 {Array.isArray(universities) && universities.map(uni => (
@@ -209,9 +194,8 @@ const Register = () => {
               </Form.Select>
             </Form.Group>
 
-
             <Form.Group className="mb-3">
-              <Form.Label style={{ fontWeight: '600', fontSize: '1rem', color: '#212529' }}>Password</Form.Label>
+              <Form.Label>Password</Form.Label>
               <Form.Control
                 type="password"
                 name="password"
@@ -219,14 +203,9 @@ const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 onBlur={handlePasswordBlur}
+                className="custom-input"
                 required
                 isInvalid={passwordErrors.length > 0 && formData.password}
-                style={{ 
-                  padding: '0.75rem', 
-                  fontSize: '1rem',
-                  border: `2px solid ${passwordErrors.length > 0 && formData.password ? '#dc3545' : '#dee2e6'}`,
-                  borderRadius: '0.5rem'
-                }}
               />
               <Form.Text className="text-muted d-block mt-2" style={{ fontSize: '0.875rem' }}>
                 <strong>Password must contain:</strong>
@@ -251,20 +230,15 @@ const Register = () => {
             </Form.Group>
 
             <Form.Group className="mb-4">
-              <Form.Label style={{ fontWeight: '600', fontSize: '1rem', color: '#212529' }}>Confirm Password</Form.Label>
+              <Form.Label>Confirm Password</Form.Label>
               <Form.Control
                 type="password"
                 name="confirmPassword"
                 placeholder="Re-enter password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                className="custom-input"
                 required
-                style={{ 
-                  padding: '0.75rem', 
-                  fontSize: '1rem',
-                  border: '2px solid #dee2e6',
-                  borderRadius: '0.5rem'
-                }}
               />
             </Form.Group>
 
@@ -273,31 +247,16 @@ const Register = () => {
               type="submit" 
               className="w-100 mb-3"
               disabled={loading}
-              style={{
-                padding: '0.875rem',
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                borderRadius: '0.5rem',
-                boxShadow: '0 4px 8px rgba(13, 110, 253, 0.25)'
-              }}
+              style={{ padding: '0.875rem', fontSize: '1.125rem', fontWeight: '600' }}
             >
               {loading ? '⏳ Creating account...' : '🚀 Register'}
             </Button>
           </Form>
 
-          <hr style={{ margin: '1.5rem 0' }} />
-
           <div className="text-center">
-            <p className="mb-0" style={{ fontSize: '1rem' }}>
-              Already have an account?{' '}
-              <Link 
-                to="/login" 
-                className="text-decoration-none"
-                style={{ fontWeight: '600', fontSize: '1.05rem' }}
-              >
-                Login here
-              </Link>
-            </p>
+            <Link to="/login" className="text-decoration-none">
+              Already have an account? Login here
+            </Link>
           </div>
         </Card.Body>
       </Card>

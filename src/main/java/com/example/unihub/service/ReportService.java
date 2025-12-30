@@ -1,8 +1,10 @@
 package com.example.unihub.service;
 
-import com.example.unihub.enums.NotificationType;
+import com.example.unihub.dto.response.BlogReportResponse;
+import com.example.unihub.dto.response.EventReportResponse;
 import com.example.unihub.enums.BlogStatus;
 import com.example.unihub.enums.EventStatus;
+import com.example.unihub.enums.NotificationType;
 import com.example.unihub.enums.ReportStatus;
 import com.example.unihub.exception.ResourceNotFoundException;
 import com.example.unihub.model.*;
@@ -98,43 +100,97 @@ public class ReportService {
     /**
      * Get all pending blog reports
      */
-    public List<BlogReport> getPendingBlogReports() {
-        return blogReportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING);
+    public List<BlogReportResponse> getPendingBlogReports() {
+        return blogReportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING)
+            .stream()
+            .map(this::toBlogReportResponse)
+            .toList();
     }
 
     /**
      * Get all pending event reports
      */
-    public List<EventReport> getPendingEventReports() {
-        return eventReportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING);
+    public List<EventReportResponse> getPendingEventReports() {
+        return eventReportRepository.findByStatusOrderByCreatedAtDesc(ReportStatus.PENDING)
+            .stream()
+            .map(this::toEventReportResponse)
+            .toList();
     }
 
     /**
      * Get all blog reports (any status)
      */
-    public List<BlogReport> getAllBlogReports() {
-        return blogReportRepository.findAll(org.springframework.data.domain.Sort.by("createdAt").descending());
+    public List<BlogReportResponse> getAllBlogReports() {
+        return blogReportRepository.findAll(org.springframework.data.domain.Sort.by("createdAt").descending())
+            .stream()
+            .map(this::toBlogReportResponse)
+            .toList();
     }
 
     /**
      * Get all event reports (any status)
      */
-    public List<EventReport> getAllEventReports() {
-        return eventReportRepository.findAll(org.springframework.data.domain.Sort.by("createdAt").descending());
+    public List<EventReportResponse> getAllEventReports() {
+        return eventReportRepository.findAll(org.springframework.data.domain.Sort.by("createdAt").descending())
+            .stream()
+            .map(this::toEventReportResponse)
+            .toList();
     }
 
     /**
      * Get blog reports by status
      */
-    public List<BlogReport> getBlogReportsByStatus(ReportStatus status) {
-        return blogReportRepository.findByStatusOrderByCreatedAtDesc(status);
+    public List<BlogReportResponse> getBlogReportsByStatus(ReportStatus status) {
+        return blogReportRepository.findByStatusOrderByCreatedAtDesc(status)
+            .stream()
+            .map(this::toBlogReportResponse)
+            .toList();
     }
 
     /**
      * Get event reports by status
      */
-    public List<EventReport> getEventReportsByStatus(ReportStatus status) {
-        return eventReportRepository.findByStatusOrderByCreatedAtDesc(status);
+    public List<EventReportResponse> getEventReportsByStatus(ReportStatus status) {
+        return eventReportRepository.findByStatusOrderByCreatedAtDesc(status)
+            .stream()
+            .map(this::toEventReportResponse)
+            .toList();
+    }
+
+    private BlogReportResponse toBlogReportResponse(BlogReport report) {
+        User reporter = report.getReportedBy();
+        Blog blog = report.getBlog();
+        User author = blog != null ? blog.getAuthor() : null;
+
+        return new BlogReportResponse(
+            report.getReportId(),
+            blog != null ? blog.getBlogId() : null,
+            blog != null ? blog.getTitle() : null,
+            author != null ? author.getName() : null,
+            reporter != null ? reporter.getUserId() : null,
+            reporter != null ? reporter.getName() : null,
+            report.getReason(),
+            report.getStatus(),
+            report.getCreatedAt()
+        );
+    }
+
+    private EventReportResponse toEventReportResponse(EventReport report) {
+        User reporter = report.getReportedBy();
+        Event event = report.getEvent();
+        User creator = event != null ? event.getCreator() : null;
+
+        return new EventReportResponse(
+            report.getReportId(),
+            event != null ? event.getEventId() : null,
+            event != null ? event.getTitle() : null,
+            creator != null ? creator.getName() : null,
+            reporter != null ? reporter.getUserId() : null,
+            reporter != null ? reporter.getName() : null,
+            report.getReason(),
+            report.getStatus(),
+            report.getCreatedAt()
+        );
     }
 
     /**

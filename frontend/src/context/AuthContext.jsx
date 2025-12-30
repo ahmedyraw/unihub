@@ -9,17 +9,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load user from localStorage on mount
-    const savedUser = authService.getCurrentUser();
-    if (savedUser) {
-      setUser(savedUser);
-      // Connect to WebSocket
-      websocketService.connect(() => {
-        console.log('WebSocket connected for user:', savedUser.userId);
-      });
-    }
-    setLoading(false);
+    // Check session on mount
+    checkSession();
   }, []);
+
+  const checkSession = async () => {
+    try {
+      const userData = await authService.checkSession();
+      setUser(userData);
+      
+      // Connect to WebSocket if session is valid
+      websocketService.connect(() => {
+        console.log('WebSocket connected after session check');
+      });
+    } catch (error) {
+      // Session invalid or expired
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email, password) => {
     try {
@@ -53,15 +62,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     websocketService.disconnect();
-    authService.logout();
+    await authService.logout();
     setUser(null);
   };
 
   const updateUser = (updatedUser) => {
     setUser(updatedUser);
-    localStorage.setItem('unihub_user', JSON.stringify(updatedUser));
   };
 
   const hasRole = (role) => {
@@ -80,7 +88,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUser,
     hasRole,
-    isAuthenticated
+    isAuthenticated,
+    checkSession
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

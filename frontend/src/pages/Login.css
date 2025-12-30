@@ -1,0 +1,68 @@
+/* Light Theme Input */
+[data-theme="light"] .custom-input {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 0.625rem !important;
+  padding: 0.75rem 1rem !important;
+  caret-color: #000000 !important;
+}
+
+[data-theme="light"] .custom-input::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+[data-theme="light"] .custom-input:focus {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
+  outline: none !important;
+}
+
+[data-theme="light"] .custom-input:-webkit-autofill,
+[data-theme="light"] .custom-input:-webkit-autofill:hover,
+[data-theme="light"] .custom-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1e293b !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  border: 2px solid #cbd5e1 !important;
+}
+
+/* Dark Theme Input */
+[data-theme="dark"] .custom-input {
+  background-color: #334155 !important;
+  color: #f1f5f9 !important;
+  border: 2px solid #475569 !important;
+  border-radius: 0.625rem !important;
+  padding: 0.75rem 1rem !important;
+  caret-color: #ffffff !important;
+}
+
+[data-theme="dark"] .custom-input::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] .custom-input:focus {
+  background-color: #334155 !important;
+  color: #f1f5f9 !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
+  outline: none !important;
+}
+
+[data-theme="dark"] .custom-input:-webkit-autofill,
+[data-theme="dark"] .custom-input:-webkit-autofill:hover,
+[data-theme="dark"] .custom-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f1f5f9 !important;
+  -webkit-box-shadow: 0 0 0 1000px #334155 inset !important;
+  box-shadow: 0 0 0 1000px #334155 inset !important;
+  border: 2px solid #475569 !important;
+}
+
+/* Disabled State */
+.custom-input:disabled {
+  opacity: 0.6 !important;
+}

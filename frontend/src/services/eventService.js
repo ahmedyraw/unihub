@@ -8,7 +8,7 @@ const eventService = {
     const params = new URLSearchParams();
     if (filters.universityId) params.append('universityId', filters.universityId);
     if (filters.status) params.append('status', filters.status);
-    if (filters.type) params.append('type', filters.type);
+    // Note: type filtering is done client-side as backend doesn't support it
     
     const response = await api.get(`/events?${params.toString()}`);
     return response.data;

@@ -1,5 +1,6 @@
 package com.example.unihub.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -13,11 +14,13 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        log.error("Resource not found: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.NOT_FOUND.value(),
             ex.getMessage(),
@@ -28,6 +31,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex) {
+        log.warn("Unauthorized access attempt: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.UNAUTHORIZED.value(),
             ex.getMessage(),
@@ -38,6 +42,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.FORBIDDEN.value(),
             "Access denied: " + ex.getMessage(),
@@ -48,6 +53,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
+        log.warn("Bad credentials: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.UNAUTHORIZED.value(),
             "Invalid email or password",
@@ -96,6 +102,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
+        log.error("Unexpected error occurred", ex);
         ErrorResponse error = new ErrorResponse(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "An error occurred: " + ex.getMessage(),
