@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Container, Card, Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { API_BASE_URL } from '../utils/constants';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -128,7 +129,7 @@ const Login = () => {
             <div className="d-grid gap-2">
               <Button 
                 variant="outline-danger"
-                onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+                onClick={() => window.location.href = `${API_BASE_URL.replace('/api', '')}/oauth2/authorization/google`}
                 className="d-flex align-items-center justify-content-center"
                 style={{ padding: '0.75rem' }}
               >
@@ -143,7 +144,7 @@ const Login = () => {
               
               <Button 
                 variant="outline-dark"
-                onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/github'}
+                onClick={() => window.location.href = `${API_BASE_URL.replace('/api', '')}/oauth2/authorization/github`}
                 className="d-flex align-items-center justify-content-center"
                 style={{ padding: '0.75rem' }}
               >
