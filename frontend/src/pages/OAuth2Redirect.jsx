@@ -14,7 +14,7 @@ const OAuth2Redirect = () => {
 
     if (token) {
       localStorage.setItem('token', token);
-      window.location.href = '/dashboard';
+      window.location.href = '/#/dashboard';
     } else if (error) {
       navigate('/login?error=oauth2_failed');
     } else {

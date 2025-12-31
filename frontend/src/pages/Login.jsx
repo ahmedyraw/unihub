@@ -75,7 +75,7 @@ const Login = () => {
               {error}
               {showResendVerification && (
                 <div className="mt-2">
-                  <Button variant="link" className="p-0" onClick={handleResendVerification}>
+                  <Button variant="link" className="p-0 text-decoration-none" style={{fontSize: '0.9rem'}} onClick={handleResendVerification}>
                     Resend verification email
                   </Button>
                 </div>

@@ -28,10 +28,7 @@ const authService = {
     } catch (error) {
       console.error('Logout error:', error);
     }
-    // Clear local storage
     localStorage.clear();
-    // Redirect to login
-    window.location.href = '/login';
   },
 
   /**

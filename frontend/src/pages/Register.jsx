@@ -4,6 +4,7 @@ import { Container, Card, Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { USER_ROLES } from '../utils/constants';
 import adminService from '../services/adminService';
+import api from '../services/api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -150,8 +151,14 @@ const Register = () => {
                 </p>
                 <hr />
                 <p className="mb-0">
-                  Didn't receive the email? <Button variant="link" className="p-0" onClick={() => {
-                    // TODO: Implement resend verification
+                  Didn't receive the email? <Button variant="link" className="p-0 text-decoration-none" style={{verticalAlign: 'baseline'}} onClick={async () => {
+                    try {
+                      await api.post('/auth/resend-verification', { email: formData.email });
+                      setError('');
+                      alert('Verification email sent! Please check your inbox.');
+                    } catch (err) {
+                      setError('Failed to resend verification email. Please try again.');
+                    }
                   }}>Resend verification email</Button>
                 </p>
               </Alert>
