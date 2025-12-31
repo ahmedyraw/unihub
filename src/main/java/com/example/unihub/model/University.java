@@ -30,6 +30,9 @@ public class University {
     @Column(name = "logo_url", length = 500)
     private String logoUrl;
 
+    @Column(name = "email_domain", length = 100)
+    private String emailDomain;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

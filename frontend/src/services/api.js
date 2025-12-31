@@ -14,6 +14,10 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -29,10 +33,19 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       // Handle 401 Unauthorized - redirect to login
-      // BUT: Don't redirect if this is a session check (let AuthContext handle it)
+      // BUT: Don't redirect for public auth endpoints
       if (error.response.status === 401) {
-        const isSessionCheck = error.config?.url?.includes('/auth/session');
-        if (!isSessionCheck && !window.location.pathname.includes('/login')) {
+        const url = error.config?.url || '';
+        const isPublicAuthEndpoint = 
+          url.includes('/auth/session') ||
+          url.includes('/auth/register') ||
+          url.includes('/auth/login') ||
+          url.includes('/auth/verify-email') ||
+          url.includes('/auth/resend-verification') ||
+          url.includes('/auth/forgot-password') ||
+          url.includes('/auth/reset-password');
+        
+        if (!isPublicAuthEndpoint && !window.location.pathname.includes('/login')) {
           window.location.href = '/login?session=expired';
         }
       }

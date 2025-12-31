@@ -170,13 +170,14 @@ p {
 
 a {
   color: var(--primary-color);
-  text-decoration: none;
+  text-decoration: none !important;
   transition: var(--transition-base);
   font-weight: 500;
 }
 
 a:hover {
   color: var(--primary-hover);
+  text-decoration: none !important;
 }
 
 /* Glassmorphism Utilities */
@@ -336,6 +337,10 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 1000;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 [data-theme="dark"] .navbar-theme {
@@ -365,7 +370,20 @@ a:hover {
 .nav-link:hover,
 .nav-link.active {
   color: var(--primary-color) !important;
-  background-color: var(--primary-soft);
+  transform: translateY(-2px);
+}
+
+/* Navbar hover effects */
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: var(--primary-color) !important;
+  transform: translateY(-2px);
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  background-color: var(--primary-soft) !important;
+  color: var(--primary-color) !important;
 }
 
 /* Utilities */

@@ -70,7 +70,7 @@ const Navbar = () => {
       className={`navbar-theme ${scrolled ? 'scrolled' : ''}`}
     >
       <Container>
-        <BSNavbar.Brand as={Link} to="/">
+        <BSNavbar.Brand as={Link} to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
           🎓 UniHub
         </BSNavbar.Brand>
         <BSNavbar.Toggle aria-controls="basic-navbar-nav" />

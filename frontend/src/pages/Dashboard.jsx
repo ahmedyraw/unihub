@@ -77,8 +77,8 @@ const Dashboard = () => {
 
       // Load top 3 members for leaderboard snippet
       const members = await gamificationService.getTopMembers(
-        'UNIVERSITY',
-        resolvedUser?.universityId,
+        'GLOBAL',
+        null,
         3
       );
       setTopMembers(Array.isArray(members) ? members : []);
@@ -385,7 +385,7 @@ const Dashboard = () => {
             </Card.Header>
             <Card.Body>
               {topMembers && topMembers.length > 0 ? topMembers.map((member, index) => (
-                <div key={member.userId} className="d-flex align-items-center mb-3 hover-card" style={{ cursor: 'pointer', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>
+                <div key={member.userId} className="d-flex align-items-center mb-3" style={{ padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>
                   <div className="me-3">
                     <h4 className="text-muted mb-0">#{index + 1}</h4>
                   </div>
@@ -425,7 +425,7 @@ const Dashboard = () => {
               {notifications.length > 0 ? (
                 <ListGroup variant="flush">
                   {notifications.map(notif => (
-                    <ListGroup.Item key={notif.notificationId} className="hover-card" style={{ cursor: 'pointer' }}>
+                    <ListGroup.Item key={notif.notificationId}>
                       <div className="d-flex align-items-start">
                         <div className="me-2">{notif.type === 'BADGE_EARNED' ? '🏆' : '🔔'}</div>
                         <div className="flex-grow-1">

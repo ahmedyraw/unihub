@@ -49,13 +49,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (data) => {
     try {
       const userData = await authService.register(data);
-      setUser(userData);
-      
-      // Connect to WebSocket
-      websocketService.connect(() => {
-        console.log('WebSocket connected after registration');
-      });
-      
+      // Don't set user or connect WebSocket - user needs to verify email first
       return userData;
     } catch (error) {
       throw error;
@@ -89,7 +83,8 @@ export const AuthProvider = ({ children }) => {
     updateUser,
     hasRole,
     isAuthenticated,
-    checkSession
+    checkSession,
+    setUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

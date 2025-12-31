@@ -2,6 +2,7 @@ package com.example.unihub.config;
 
 import com.example.unihub.security.CustomUserDetailsService;
 import com.example.unihub.security.JwtAuthenticationFilter;
+import com.example.unihub.security.OAuth2AuthenticationSuccessHandler;
 import com.example.unihub.security.RateLimitingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,8 +20,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
@@ -33,6 +32,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RateLimitingFilter rateLimitingFilter;
     private final CorsConfigurationSource corsConfigurationSource;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,7 +45,9 @@ public class SecurityConfig {
 
                 // Public endpoints
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", 
-                                "/api/auth/reset-password", "/api/auth/validate-reset-token").permitAll()
+                                "/api/auth/reset-password", "/api/auth/validate-reset-token",
+                                "/api/auth/verify-email", "/api/auth/resend-verification").permitAll()
+                .requestMatchers("/login/oauth2/**", "/oauth2/**").permitAll()
                 .requestMatchers("/api/auth/session").authenticated()
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/ws/**").permitAll()
@@ -88,6 +90,14 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+            )
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.sendError(401, "Unauthorized");
+                })
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)

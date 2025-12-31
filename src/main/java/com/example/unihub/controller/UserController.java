@@ -72,4 +72,36 @@ public class UserController {
         userService.changePassword(user.getUserId(), oldPassword, newPassword);
         return ResponseEntity.ok("Password changed successfully");
     }
+
+    /**
+     * Set password for OAuth2 users
+     * PUT /api/users/set-password
+     */
+    @PutMapping("/set-password")
+    public ResponseEntity<String> setPassword(
+            @RequestBody Map<String, String> request,
+            Authentication authentication) {
+        String email = authentication.getName();
+        User user = userService.getUserByEmail(email);
+        
+        String newPassword = request.get("newPassword");
+        userService.setPassword(user.getUserId(), newPassword);
+        return ResponseEntity.ok("Password set successfully");
+    }
+
+    /**
+     * Update university
+     * PUT /api/users/university
+     */
+    @PutMapping("/university")
+    public ResponseEntity<User> updateUniversity(
+            @RequestBody Map<String, Long> request,
+            Authentication authentication) {
+        String email = authentication.getName();
+        User user = userService.getUserByEmail(email);
+        
+        Long universityId = request.get("universityId");
+        User updatedUser = userService.updateUniversity(user.getUserId(), universityId);
+        return ResponseEntity.ok(updatedUser);
+    }
 }

@@ -5,9 +5,11 @@ import com.example.unihub.dto.request.RegisterRequest;
 import com.example.unihub.dto.response.AuthResponse;
 import com.example.unihub.exception.UnauthorizedException;
 import com.example.unihub.model.Badge;
+import com.example.unihub.model.EmailVerificationToken;
 import com.example.unihub.model.University;
 import com.example.unihub.model.User;
 import com.example.unihub.repository.BadgeRepository;
+import com.example.unihub.repository.EmailVerificationTokenRepository;
 import com.example.unihub.repository.UniversityRepository;
 import com.example.unihub.repository.UserRepository;
 import com.example.unihub.security.JwtUtil;
@@ -21,7 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +35,11 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UniversityRepository universityRepository;
     private final BadgeRepository badgeRepository;
+    private final EmailVerificationTokenRepository verificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     /**
      * Register a new user
@@ -53,6 +59,21 @@ public class AuthService {
             throw new IllegalArgumentException("Password validation failed: " + String.join(", ", passwordErrors));
         }
         
+        // Validate university and email domain
+        University university = null;
+        if (request.getUniversityId() != null) {
+            university = universityRepository.findById(request.getUniversityId())
+                .orElseThrow(() -> new IllegalArgumentException("University not found"));
+            
+            // Validate email domain matches university
+            if (university.getEmailDomain() != null && !university.getEmailDomain().isEmpty()) {
+                String emailDomain = request.getEmail().substring(request.getEmail().indexOf('@') + 1).toLowerCase();
+                if (!emailDomain.equals(university.getEmailDomain().toLowerCase())) {
+                    throw new IllegalArgumentException("Email must be from " + university.getEmailDomain() + " domain");
+                }
+            }
+        }
+        
         // Create new user
         User user = new User();
         user.setName(request.getName());
@@ -60,13 +81,8 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(UserRole.STUDENT);
         user.setPoints(0);
-        
-        // Set university if provided
-        if (request.getUniversityId() != null) {
-            University university = universityRepository.findById(request.getUniversityId())
-                .orElseThrow(() -> new IllegalArgumentException("University not found"));
-            user.setUniversity(university);
-        }
+        user.setEmailVerified(false);
+        user.setUniversity(university);
         
         // Assign default badge (lowest threshold)
         Badge defaultBadge = badgeRepository.findTopByPointsThresholdLessThanEqualOrderByPointsThresholdDesc(0)
@@ -75,16 +91,24 @@ public class AuthService {
         
         user = userRepository.save(user);
         
-        // Generate JWT token
-        String token = jwtUtil.generateToken(
-            user.getEmail(),
-            user.getUserId(),
-            user.getRole().name(),
-            user.getUniversity() != null ? user.getUniversity().getUniversityId() : null
-        );
+        // Create verification token
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = new EmailVerificationToken();
+        verificationToken.setToken(token);
+        verificationToken.setUser(user);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(24));
+        verificationTokenRepository.save(verificationToken);
         
-        // Build response
-        return buildAuthResponse(user, token);
+        // Send verification email
+        emailService.sendVerificationEmail(user.getEmail(), user.getName(), token);
+        
+        // Build response (no JWT token until verified)
+        AuthResponse response = new AuthResponse();
+        response.setUserId(user.getUserId());
+        response.setName(user.getName());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
+        return response;
     }
 
     /**
@@ -94,14 +118,19 @@ public class AuthService {
         log.info("Login attempt for email: {}", request.getEmail());
         
         try {
+            // Get user first to check verification
+            User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+            
+            // Check if email is verified
+            if (!user.getEmailVerified()) {
+                throw new UnauthorizedException("Please verify your email before logging in");
+            }
+            
             // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
-            
-            // Get user details
-            User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
             
             // Generate JWT token
             String token = jwtUtil.generateToken(
@@ -113,6 +142,8 @@ public class AuthService {
             
             return buildAuthResponse(user, token);
             
+        } catch (UnauthorizedException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Authentication failed for email: {}", request.getEmail(), e);
             throw new UnauthorizedException("Invalid email or password");
@@ -130,6 +161,7 @@ public class AuthService {
         response.setEmail(user.getEmail());
         response.setRole(user.getRole());
         response.setPoints(user.getPoints());
+        response.setHasPassword(user.getPasswordHash() != null && !user.getPasswordHash().isEmpty());
         
         if (user.getUniversity() != null) {
             response.setUniversityId(user.getUniversity().getUniversityId());
@@ -150,5 +182,60 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UnauthorizedException("User not found"));
         return buildAuthResponse(user, null);
+    }
+
+    /**
+     * Verify email with token
+     */
+    @Transactional
+    public AuthResponse verifyEmail(String token) {
+        EmailVerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid verification token"));
+        
+        if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Verification token has expired");
+        }
+        
+        User user = verificationToken.getUser();
+        user.setEmailVerified(true);
+        userRepository.save(user);
+        
+        verificationTokenRepository.delete(verificationToken);
+        
+        // Generate JWT token
+        String jwtToken = jwtUtil.generateToken(
+            user.getEmail(),
+            user.getUserId(),
+            user.getRole().name(),
+            user.getUniversity() != null ? user.getUniversity().getUniversityId() : null
+        );
+        
+        return buildAuthResponse(user, jwtToken);
+    }
+
+    /**
+     * Resend verification email
+     */
+    @Transactional
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        if (user.getEmailVerified()) {
+            throw new IllegalArgumentException("Email already verified");
+        }
+        
+        // Delete old token if exists
+        verificationTokenRepository.findByUser(user).ifPresent(verificationTokenRepository::delete);
+        
+        // Create new token
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = new EmailVerificationToken();
+        verificationToken.setToken(token);
+        verificationToken.setUser(user);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(24));
+        verificationTokenRepository.save(verificationToken);
+        
+        emailService.sendVerificationEmail(user.getEmail(), user.getName(), token);
     }
 }

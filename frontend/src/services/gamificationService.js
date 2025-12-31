@@ -54,6 +54,22 @@ const gamificationService = {
   getMyBadges: async () => {
     const response = await api.get('/gamification/my-badges');
     return response.data;
+  },
+
+  /**
+   * Get my rank
+   */
+  getMyRank: async (scope = 'GLOBAL') => {
+    const response = await api.get(`/gamification/my-rank?scope=${scope}`);
+    return response.data;
+  },
+
+  /**
+   * Get user rank by ID
+   */
+  getUserRank: async (userId, scope = 'GLOBAL') => {
+    const response = await api.get(`/gamification/rank/${userId}?scope=${scope}`);
+    return response.data;
   }
 };
 

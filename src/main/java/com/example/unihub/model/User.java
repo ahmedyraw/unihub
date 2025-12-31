@@ -38,6 +38,9 @@ public class User {
     @JsonIgnore
     private String passwordHash;
 
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;

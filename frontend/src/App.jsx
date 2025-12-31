@@ -43,6 +43,8 @@ const AdminUniversities = lazy(() => import('./pages/AdminUniversities'));
 const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const OAuth2Redirect = lazy(() => import('./pages/OAuth2Redirect'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const LoadingFallback = () => (
@@ -71,6 +73,8 @@ function App() {
                   <Route path="/register" element={<Register />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
+                  <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
                   <Route path="/events" element={<Events />} />
                   <Route path="/events/:id" element={<EventDetails />} />
                   <Route path="/blogs" element={<Blogs />} />

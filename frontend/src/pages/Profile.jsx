@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Card, Row, Col, Badge, ListGroup, Button } from 'react-bootstrap';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useWebSocket } from '../hooks/useWebSocket';
 import userService from '../services/userService';
 import eventService from '../services/eventService';
 import blogService from '../services/blogService';
@@ -11,32 +12,46 @@ import { formatDate, formatPoints, getBadgeColor, getStatusVariant } from '../ut
 const Profile = () => {
   const { id } = useParams();
   const { user: currentUser } = useAuth();
+  const { leaderboardUpdated } = useWebSocket();
   const [user, setUser] = useState(null);
   const [badges, setBadges] = useState([]);
   const [events, setEvents] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [rank, setRank] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadProfileData();
   }, [id]);
 
+  // Reload rank when leaderboard updates
+  useEffect(() => {
+    if (leaderboardUpdated) {
+      loadRank();
+    }
+  }, [leaderboardUpdated, id]);
+
   const loadProfileData = async () => {
     try {
-      // Load user info
       const userData = await userService.getUserById(id);
       setUser(userData);
 
-      // Load user's badges
-      const badgesData = await gamificationService.getMyBadges();
-      setBadges(badgesData.earnedBadges || []);
+      // Load user's rank
+      try {
+        const rankData = await gamificationService.getUserRank(id, 'GLOBAL');
+        setRank(rankData.rank);
+      } catch (err) {
+        console.error('Failed to load rank:', err);
+      }
 
-      // Load user's events (only if viewing own profile)
+      // Load user's badges and events only if viewing own profile
       if (currentUser && currentUser.userId.toString() === id) {
+        const badgesData = await gamificationService.getMyBadges();
+        setBadges(badgesData.earnedBadges || []);
+
         const eventsData = await eventService.getMyEvents();
         setEvents(Array.isArray(eventsData) ? eventsData.slice(0, 5) : []);
 
-        // Load user's blogs
         const blogsData = await blogService.getMyBlogs();
         setBlogs(Array.isArray(blogsData) ? blogsData.slice(0, 5) : []);
       }
@@ -44,6 +59,15 @@ const Profile = () => {
       console.error('Failed to load profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRank = async () => {
+    try {
+      const rankData = await gamificationService.getUserRank(id, 'GLOBAL');
+      setRank(rankData.rank);
+    } catch (err) {
+      console.error('Failed to load rank:', err);
     }
   };
 
@@ -85,12 +109,19 @@ const Profile = () => {
               {user.role}
             </Badge>
             <div className="mt-3">
-              <h4>{formatPoints(user.points)} Points</h4>
-              {user.currentBadge && (
-                <Badge bg={getBadgeColor(user.currentBadge.name)} className="fs-6">
-                  🏆 {user.currentBadge.name}
-                </Badge>
-              )}
+              <h4 className="mb-3">{formatPoints(user.points)} Points</h4>
+              <div className="d-flex justify-content-center gap-2">
+                {rank && (
+                  <Badge bg="info" className="fs-6">
+                    🏆 Rank #{rank}
+                  </Badge>
+                )}
+                {user.currentBadge && (
+                  <Badge bg={getBadgeColor(user.currentBadge.name)} className="fs-6">
+                    🏆 {user.currentBadge.name}
+                  </Badge>
+                )}
+              </div>
             </div>
             <p className="text-muted mt-2">{user.university?.name}</p>
           </div>
@@ -99,61 +130,65 @@ const Profile = () => {
 
       <Row className="g-4">
         {/* Earned Badges */}
-        <Col md={6}>
-          <Card>
-            <Card.Header>
-              <h5 className="mb-0">🏆 Earned Badges</h5>
-            </Card.Header>
-            <Card.Body>
-              {badges.length > 0 ? (
-                <div className="d-flex flex-wrap gap-2">
-                  {badges.map(userBadge => (
-                    <Badge 
-                      key={userBadge.badge.badgeId}
-                      bg={getBadgeColor(userBadge.badge.name)}
-                      className="p-2"
-                      style={{ fontSize: '0.9rem' }}
-                    >
-                      {userBadge.badge.name}
-                    </Badge>
-                  ))}
+        {isOwnProfile && (
+          <Col md={6}>
+            <Card>
+              <Card.Header>
+                <h5 className="mb-0">🏆 Earned Badges</h5>
+              </Card.Header>
+              <Card.Body>
+                {badges.length > 0 ? (
+                  <div className="d-flex flex-wrap gap-2">
+                    {badges.map(userBadge => (
+                      <Badge 
+                        key={userBadge.badge.badgeId}
+                        bg={getBadgeColor(userBadge.badge.name)}
+                        className="p-2"
+                        style={{ fontSize: '0.9rem' }}
+                      >
+                        {userBadge.badge.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted text-center py-3">No badges earned yet</p>
+                )}
+                <div className="text-center mt-3">
+                  <Button as={Link} to="/badges" variant="outline-primary" size="sm">
+                    View All Badges
+                  </Button>
                 </div>
-              ) : (
-                <p className="text-muted text-center py-3">No badges earned yet</p>
-              )}
-              <div className="text-center mt-3">
-                <Button as={Link} to="/badges" variant="outline-primary" size="sm">
-                  View All Badges
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
 
         {/* Recent Activity */}
-        <Col md={6}>
-          <Card>
-            <Card.Header>
-              <h5 className="mb-0">📊 Stats</h5>
-            </Card.Header>
-            <Card.Body>
-              <div className="d-flex justify-content-around text-center">
-                <div>
-                  <h3>{events.length}</h3>
-                  <p className="text-muted mb-0 small">Events</p>
+        {isOwnProfile && (
+          <Col md={6}>
+            <Card>
+              <Card.Header>
+                <h5 className="mb-0">📊 Stats</h5>
+              </Card.Header>
+              <Card.Body>
+                <div className="d-flex justify-content-around text-center">
+                  <div>
+                    <h3>{events.length}</h3>
+                    <p className="text-muted mb-0 small">Events</p>
+                  </div>
+                  <div>
+                    <h3>{blogs.length}</h3>
+                    <p className="text-muted mb-0 small">Blogs</p>
+                  </div>
+                  <div>
+                    <h3>{badges.length}</h3>
+                    <p className="text-muted mb-0 small">Badges</p>
+                  </div>
                 </div>
-                <div>
-                  <h3>{blogs.length}</h3>
-                  <p className="text-muted mb-0 small">Blogs</p>
-                </div>
-                <div>
-                  <h3>{badges.length}</h3>
-                  <p className="text-muted mb-0 small">Badges</p>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
 
         {/* Recent Events (Own Profile Only) */}
         {isOwnProfile && events.length > 0 && (

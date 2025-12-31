@@ -71,4 +71,17 @@ public class LeaderboardService {
         List<Event> leaderboard = getEventsLeaderboard(scope, universityId);
         return leaderboard.stream().limit(limit).toList();
     }
+
+    /**
+     * Get user's rank in leaderboard
+     */
+    public int getUserRank(Long userId, String scope, Long universityId) {
+        List<User> leaderboard = getMembersLeaderboard(scope, universityId);
+        for (int i = 0; i < leaderboard.size(); i++) {
+            if (leaderboard.get(i).getUserId().equals(userId)) {
+                return i + 1; // Rank starts from 1
+            }
+        }
+        return -1; // User not found
+    }
 }

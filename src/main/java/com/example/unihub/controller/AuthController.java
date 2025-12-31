@@ -28,7 +28,6 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, 
                                                   HttpServletResponse response) {
         AuthResponse authResponse = authService.register(request);
-        setAuthCookie(response, authResponse.getToken());
         return ResponseEntity.ok(authResponse);
     }
 
@@ -87,6 +86,27 @@ public class AuthController {
             return ResponseEntity.ok(response);
         }
         return ResponseEntity.status(401).build();
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token, HttpServletResponse response) {
+        try {
+            AuthResponse authResponse = authService.verifyEmail(token);
+            setAuthCookie(response, authResponse.getToken());
+            return ResponseEntity.ok(authResponse);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, String>> resendVerification(@RequestBody Map<String, String> request) {
+        try {
+            authService.resendVerificationEmail(request.get("email"));
+            return ResponseEntity.ok(Map.of("message", "Verification email sent"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     private void setAuthCookie(HttpServletResponse response, String token) {

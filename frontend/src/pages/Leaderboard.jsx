@@ -12,6 +12,7 @@ const Leaderboard = () => {
   const [scope, setScope] = useState(LEADERBOARD_SCOPES.GLOBAL);
   const [type, setType] = useState(LEADERBOARD_TYPES.MEMBERS);
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const [myRank, setMyRank] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const loadLeaderboard = useCallback(async () => {
@@ -21,13 +22,23 @@ const Leaderboard = () => {
       const data = await gamificationService.getLeaderboard(scope, type, universityId);
       const rankings = data?.rankings || [];
       setLeaderboardData(Array.isArray(rankings) ? rankings : []);
+      
+      // Load user's rank if viewing members leaderboard
+      if (type === LEADERBOARD_TYPES.MEMBERS && user) {
+        try {
+          const rankData = await gamificationService.getMyRank(scope);
+          setMyRank(rankData.rank);
+        } catch (err) {
+          console.error('Failed to load rank:', err);
+        }
+      }
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
       setLeaderboardData([]);
     } finally {
       setLoading(false);
     }
-  }, [scope, type, user?.universityId]);
+  }, [scope, type, user?.universityId, user]);
 
   useEffect(() => {
     loadLeaderboard();
@@ -47,6 +58,18 @@ const Leaderboard = () => {
           <h2>🏆 Leaderboard</h2>
           <p className="text-muted">See top contributors and events</p>
         </Col>
+        {myRank && type === LEADERBOARD_TYPES.MEMBERS && (
+          <Col md="auto">
+            <Card bg="primary" text="white">
+              <Card.Body className="py-2 px-4">
+                <div className="text-center">
+                  <small>Your Rank</small>
+                  <h3 className="mb-0">#{myRank}</h3>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
       </Row>
 
       {/* Filters */}
@@ -135,8 +158,19 @@ const Leaderboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {leaderboardData.map((item, index) => (
-                  <tr key={type === LEADERBOARD_TYPES.MEMBERS ? `member-${item.userId || index}` : `event-${item.eventId || index}`}>
+                {leaderboardData.map((item, index) => {
+                  const handleClick = () => {
+                    if (type === LEADERBOARD_TYPES.MEMBERS) {
+                      window.location.href = `/profile/${item.userId}`;
+                    }
+                  };
+                  
+                  return (
+                  <tr 
+                    key={type === LEADERBOARD_TYPES.MEMBERS ? `member-${item.userId || index}` : `event-${item.eventId || index}`}
+                    onClick={handleClick}
+                    style={{ cursor: type === LEADERBOARD_TYPES.MEMBERS ? 'pointer' : 'default' }}
+                  >
                     <td>
                       <h4 className="mb-0 text-muted">#{index + 1}</h4>
                     </td>
@@ -171,7 +205,8 @@ const Leaderboard = () => {
                       </>
                     )}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </Table>
           ) : (

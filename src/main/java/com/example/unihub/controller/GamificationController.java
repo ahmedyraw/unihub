@@ -79,6 +79,50 @@ public class GamificationController {
     }
 
     /**
+     * Get my rank
+     * GET /api/gamification/my-rank?scope=GLOBAL
+     */
+    @GetMapping("/my-rank")
+    public ResponseEntity<Map<String, Object>> getMyRank(
+            @RequestParam(defaultValue = "GLOBAL") String scope,
+            Authentication authentication) {
+        String email = authentication.getName();
+        User user = userService.getUserByEmail(email);
+        
+        Long universityId = "UNIVERSITY".equalsIgnoreCase(scope) && user.getUniversity() != null 
+            ? user.getUniversity().getUniversityId() : null;
+        int rank = leaderboardService.getUserRank(user.getUserId(), scope, universityId);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("rank", rank);
+        response.put("scope", scope);
+        response.put("points", user.getPoints());
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get user rank by ID
+     * GET /api/gamification/rank/{userId}?scope=GLOBAL
+     */
+    @GetMapping("/rank/{userId}")
+    public ResponseEntity<Map<String, Object>> getUserRank(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "GLOBAL") String scope) {
+        User user = userService.getUserById(userId);
+        Long universityId = "UNIVERSITY".equalsIgnoreCase(scope) && user.getUniversity() != null 
+            ? user.getUniversity().getUniversityId() : null;
+        int rank = leaderboardService.getUserRank(userId, scope, universityId);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("rank", rank);
+        response.put("scope", scope);
+        response.put("points", user.getPoints());
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Get all badges
      * GET /api/gamification/badges
      */

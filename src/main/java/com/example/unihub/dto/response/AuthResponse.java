@@ -19,4 +19,5 @@ public class AuthResponse {
     private Long universityId;
     private String universityName;
     private String currentBadgeName;
+    private Boolean hasPassword;
 }

@@ -34,6 +34,26 @@ const userService = {
       newPassword
     });
     return response.data;
+  },
+
+  /**
+   * Set password for OAuth2 users
+   */
+  setPassword: async (newPassword) => {
+    const response = await api.put('/users/set-password', {
+      newPassword
+    });
+    return response.data;
+  },
+
+  /**
+   * Update university
+   */
+  updateUniversity: async (universityId) => {
+    const response = await api.put('/users/university', {
+      universityId: parseInt(universityId)
+    });
+    return response.data;
   }
 };
 

@@ -21,6 +21,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState([]);
   const [emailError, setEmailError] = useState('');
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   useEffect(() => {
     loadUniversities();
@@ -122,7 +123,7 @@ const Register = () => {
       };
 
       await register(registerData);
-      navigate('/dashboard');
+      setRegistrationSuccess(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -139,7 +140,28 @@ const Register = () => {
             <p className="text-muted">Create your account</p>
           </div>
 
-          {error && <Alert variant="danger">{error}</Alert>}
+          {registrationSuccess ? (
+            <>
+              <Alert variant="success">
+                <Alert.Heading>Registration Successful! 🎉</Alert.Heading>
+                <p>
+                  We've sent a verification email to <strong>{formData.email}</strong>.
+                  Please check your inbox and click the verification link to activate your account.
+                </p>
+                <hr />
+                <p className="mb-0">
+                  Didn't receive the email? <Button variant="link" className="p-0" onClick={() => {
+                    // TODO: Implement resend verification
+                  }}>Resend verification email</Button>
+                </p>
+              </Alert>
+              <div className="text-center mt-3">
+                <Link to="/login" className="btn btn-primary">Go to Login</Link>
+              </div>
+            </>
+          ) : (
+            <>
+              {error && <Alert variant="danger">{error}</Alert>}
 
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
@@ -188,10 +210,15 @@ const Register = () => {
                 <option value="">Select University</option>
                 {Array.isArray(universities) && universities.map(uni => (
                   <option key={uni.universityId} value={uni.universityId}>
-                    {uni.name}
+                    {uni.name}{uni.emailDomain ? ` (@${uni.emailDomain})` : ''}
                   </option>
                 ))}
               </Form.Select>
+              {formData.universityId && universities.find(u => u.universityId === parseInt(formData.universityId))?.emailDomain && (
+                <Form.Text className="text-muted d-block mt-1">
+                  Use your @{universities.find(u => u.universityId === parseInt(formData.universityId)).emailDomain} email
+                </Form.Text>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -258,6 +285,8 @@ const Register = () => {
               Already have an account? Login here
             </Link>
           </div>
+            </>
+          )}
         </Card.Body>
       </Card>
     </Container>
