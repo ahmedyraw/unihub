@@ -21,7 +21,7 @@ public class EmailService {
     private String fromEmail;
 
     public void sendPasswordResetEmail(String email, String name, String token) {
-        String resetLink = frontendUrl + "/reset-password?token=" + token;
+        String resetLink = frontendUrl + "/#/reset-password?token=" + token;
         
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -49,7 +49,7 @@ public class EmailService {
     }
 
     public void sendVerificationEmail(String email, String name, String token) {
-        String verificationLink = frontendUrl + "/verify-email?token=" + token;
+        String verificationLink = frontendUrl + "/#/verify-email?token=" + token;
         
         try {
             SimpleMailMessage message = new SimpleMailMessage();

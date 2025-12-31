@@ -60,6 +60,7 @@ export const AuthProvider = ({ children }) => {
     websocketService.disconnect();
     await authService.logout();
     setUser(null);
+    localStorage.clear();
     window.location.href = '/#/login';
   };
 
