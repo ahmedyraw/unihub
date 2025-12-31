@@ -22,7 +22,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
-    @Value("${cors.allowed.origins}")
+    @Value("${app.frontend.url}")
     private String frontendUrl;
 
     public OAuth2AuthenticationSuccessHandler(JwtUtil jwtUtil, @Lazy UserService userService) {
