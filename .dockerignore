@@ -1,0 +1,12 @@
+target/
+.mvn/
+*.log
+.git/
+.idea/
+*.iml
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.env
+*.md
+!README.md
