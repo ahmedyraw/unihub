@@ -1,4 +1,5 @@
-package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
+package com.example.unihub.controller;
+import com.example.unihub.util.AuthenticationUtil;
 
 import com.example.unihub.dto.response.BlogReportResponse;
 import com.example.unihub.dto.response.EventReportResponse;

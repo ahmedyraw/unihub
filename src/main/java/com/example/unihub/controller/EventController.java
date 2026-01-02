@@ -1,5 +1,7 @@
 package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
 
+import com.example.unihub.util.AuthenticationUtil;
+
 import com.example.unihub.dto.request.CreateEventRequest;
 import com.example.unihub.dto.request.JoinEventRequest;
 import com.example.unihub.enums.EventStatus;

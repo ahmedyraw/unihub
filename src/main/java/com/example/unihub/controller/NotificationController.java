@@ -1,5 +1,7 @@
 package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
 
+import com.example.unihub.util.AuthenticationUtil;
+
 import com.example.unihub.enums.NotificationType;
 import com.example.unihub.model.Notification;
 import com.example.unihub.model.User;
