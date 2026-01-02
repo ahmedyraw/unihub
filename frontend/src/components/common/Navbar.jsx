@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { USER_ROLES } from '../../utils/constants';
 import notificationService from '../../services/notificationService';
+import chatService from '../../services/chatService';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
 const Navbar = () => {
@@ -13,6 +14,7 @@ const Navbar = () => {
   const { notificationReceived } = useWebSocket();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadChatsCount, setUnreadChatsCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -26,6 +28,7 @@ const Navbar = () => {
   useEffect(() => {
     if (user) {
       loadUnreadCount();
+      loadUnreadChatsCount();
     }
   }, [user]);
 
@@ -33,6 +36,7 @@ const Navbar = () => {
   useEffect(() => {
     if (notificationReceived && user) {
       loadUnreadCount();
+      loadUnreadChatsCount();
     }
   }, [notificationReceived, user]);
 
@@ -44,8 +48,18 @@ const Navbar = () => {
       }
     };
 
+    const handleChatRead = () => {
+      if (user) {
+        loadUnreadChatsCount();
+      }
+    };
+
     window.addEventListener('notificationRead', handleNotificationRead);
-    return () => window.removeEventListener('notificationRead', handleNotificationRead);
+    window.addEventListener('chatRead', handleChatRead);
+    return () => {
+      window.removeEventListener('notificationRead', handleNotificationRead);
+      window.removeEventListener('chatRead', handleChatRead);
+    };
   }, [user]);
 
   const loadUnreadCount = async () => {
@@ -54,6 +68,16 @@ const Navbar = () => {
       setUnreadCount(count);
     } catch (error) {
       console.error('Failed to load unread count:', error);
+    }
+  };
+
+  const loadUnreadChatsCount = async () => {
+    try {
+      const conversations = await chatService.getConversations();
+      const unreadCount = conversations.filter(conv => conv.unreadCount > 0).length;
+      setUnreadChatsCount(unreadCount);
+    } catch (error) {
+      console.error('Failed to load unread chats count:', error);
     }
   };
 
@@ -81,6 +105,16 @@ const Navbar = () => {
             <Nav.Link as={Link} to="/blogs">Blogs</Nav.Link>
             <Nav.Link as={Link} to="/leaderboard">Leaderboard</Nav.Link>
             {isAuthenticated() && <Nav.Link as={Link} to="/badges">Badges</Nav.Link>}
+            {isAuthenticated() && (
+              <Nav.Link as={Link} to="/chat" className="position-relative d-flex align-items-center">
+                Chat
+                {unreadChatsCount > 0 && (
+                  <Badge bg="danger" pill className="ms-2" style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}>
+                    {unreadChatsCount}
+                  </Badge>
+                )}
+              </Nav.Link>
+            )}
           </Nav>
 
           <Nav>

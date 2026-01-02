@@ -54,6 +54,14 @@ const userService = {
       universityId: parseInt(universityId)
     });
     return response.data;
+  },
+
+  /**
+   * Get all users (for chat)
+   */
+  getAllUsers: async () => {
+    const response = await api.get('/users');
+    return response.data;
   }
 };
 

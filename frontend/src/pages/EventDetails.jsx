@@ -54,14 +54,15 @@ const EventDetails = () => {
           console.warn('Failed to load user requests:', err);
         }
         
-        // Check if user has already reported
-        try {
-          const reports = await reportService.getEventReports({ eventId: id });
-          const userReport = reports.find(r => r.reportedBy?.userId === user.userId || r.reportedBy?.email === user.email);
-          setHasReported(!!userReport);
-        } catch (err) {
-          // Silently fail - user can still try to report
-          setHasReported(false);
+        // Check if user has already reported (only for supervisors/admins)
+        if (user.role === 'SUPERVISOR' || user.role === 'ADMIN') {
+          try {
+            const reports = await reportService.getEventReports({ eventId: id });
+            const userReport = reports.find(r => r.reportedBy?.userId === user.userId || r.reportedBy?.email === user.email);
+            setHasReported(!!userReport);
+          } catch (err) {
+            setHasReported(false);
+          }
         }
       }
     } catch (err) {

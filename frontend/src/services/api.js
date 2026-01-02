@@ -29,22 +29,16 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      // Handle 401 Unauthorized - redirect to login
+      // Handle 401 Unauthorized - only redirect on session check failure
       if (error.response.status === 401) {
         const url = error.config?.url || '';
-        const isPublicAuthEndpoint = 
-          url.includes('/auth/session') ||
-          url.includes('/auth/register') ||
-          url.includes('/auth/login') ||
-          url.includes('/auth/verify-email') ||
-          url.includes('/auth/resend-verification') ||
-          url.includes('/auth/forgot-password') ||
-          url.includes('/auth/reset-password') ||
-          url.includes('/auth/validate-reset-token');
         
-        if (!isPublicAuthEndpoint && !window.location.hash.includes('/login')) {
+        // Only redirect to login if the session check itself fails
+        if (url.includes('/auth/session') && !window.location.hash.includes('/login')) {
+          localStorage.clear();
           window.location.href = '/#/login';
         }
+        // For other 401 errors, just reject without redirecting
       }
       
       // Handle 403 Forbidden

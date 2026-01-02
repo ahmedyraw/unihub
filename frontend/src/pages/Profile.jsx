@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Row, Col, Badge, ListGroup, Button } from 'react-bootstrap';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useWebSocket } from '../hooks/useWebSocket';
@@ -8,6 +8,7 @@ import userService from '../services/userService';
 import eventService from '../services/eventService';
 import blogService from '../services/blogService';
 import gamificationService from '../services/gamificationService';
+import chatService from '../services/chatService';
 import { formatDate, formatPoints, getBadgeColor, getStatusVariant } from '../utils/helpers';
 
 const Profile = () => {
@@ -15,6 +16,7 @@ const Profile = () => {
   const { user: currentUser } = useAuth();
   const { theme } = useTheme();
   const { leaderboardUpdated } = useWebSocket();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [badges, setBadges] = useState([]);
   const [events, setEvents] = useState([]);
@@ -73,6 +75,15 @@ const Profile = () => {
     }
   };
 
+  const handleStartChat = async () => {
+    try {
+      const conversation = await chatService.createConversation([parseInt(id)], false);
+      navigate('/chat', { state: { selectedConversation: conversation } });
+    } catch (error) {
+      console.error('Failed to start chat:', error);
+    }
+  };
+
   if (loading) {
     return (
       <Container className="py-5 text-center">
@@ -112,7 +123,7 @@ const Profile = () => {
             </Badge>
             <div className="mt-3">
               <h4 className="mb-3">{formatPoints(user.points)} Points</h4>
-              <div className="d-flex justify-content-center gap-2">
+              <div className="d-flex justify-content-center gap-2 mb-3">
                 {rank && (
                   <Badge bg="info" className="fs-6">
                     🏆 Rank #{rank}
@@ -124,6 +135,16 @@ const Profile = () => {
                   </Badge>
                 )}
               </div>
+              {!isOwnProfile && (
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  onClick={handleStartChat}
+                  className="mt-2"
+                >
+                  💬 Send Message
+                </Button>
+              )}
             </div>
             <p className="text-muted mt-2">{user.university?.name}</p>
           </div>

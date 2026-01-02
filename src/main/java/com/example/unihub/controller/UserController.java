@@ -38,6 +38,15 @@ public class UserController {
     }
 
     /**
+     * Get all users (for chat)
+     * GET /api/users
+     */
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    /**
      * Update current user profile
      * PUT /api/users/me
      */

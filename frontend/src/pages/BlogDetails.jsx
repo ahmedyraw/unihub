@@ -30,14 +30,13 @@ const BlogDetails = () => {
       const blogData = await blogService.getBlogById(id);
       setBlog(blogData);
       
-      // Check if user has already reported
-      if (user) {
+      // Check if user has already reported (only for supervisors/admins)
+      if (user && (user.role === USER_ROLES.SUPERVISOR || user.role === USER_ROLES.ADMIN)) {
         try {
           const reports = await reportService.getBlogReports({ blogId: id });
           const userReport = reports.find(r => r.reportedBy?.userId === user.userId || r.reportedBy?.email === user.email);
           setHasReported(!!userReport);
         } catch (err) {
-          // Silently fail - user can still try to report
           setHasReported(false);
         }
       }

@@ -56,6 +56,7 @@ const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const Guidelines = lazy(() => import('./pages/Guidelines'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Support = lazy(() => import('./pages/Support'));
+const Chat = lazy(() => import('./pages/Chat'));
 
 const LoadingFallback = () => (
   <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
@@ -202,6 +203,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <MyEventRequests />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/chat"
+                    element={
+                      <ProtectedRoute>
+                        <Chat />
                       </ProtectedRoute>
                     }
                   />
