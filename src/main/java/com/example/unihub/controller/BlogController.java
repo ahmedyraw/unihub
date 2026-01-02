@@ -6,6 +6,7 @@ import com.example.unihub.model.Blog;
 import com.example.unihub.model.User;
 import com.example.unihub.service.BlogService;
 import com.example.unihub.service.UserService;
+import com.example.unihub.util.AuthenticationUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -56,7 +57,7 @@ public class BlogController {
     public ResponseEntity<Blog> createBlog(
             @Valid @RequestBody CreateBlogRequest request,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User author = userService.getUserByEmail(email);
         Blog blog = blogService.createBlog(request, author);
         return ResponseEntity.status(HttpStatus.CREATED).body(blog);
@@ -71,7 +72,7 @@ public class BlogController {
             @PathVariable Long id,
             @Valid @RequestBody CreateBlogRequest request,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User currentUser = userService.getUserByEmail(email);
         Blog blog = blogService.updateBlog(id, request, currentUser);
         return ResponseEntity.ok(blog);
@@ -106,7 +107,7 @@ public class BlogController {
      */
     @GetMapping("/my-blogs")
     public ResponseEntity<List<Blog>> getMyBlogs(Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         List<Blog> blogs = blogService.getBlogsByAuthor(user.getUserId());
         return ResponseEntity.ok(blogs);
@@ -130,7 +131,7 @@ public class BlogController {
     public ResponseEntity<String> deleteBlog(
             @PathVariable Long id,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         blogService.deleteBlog(id, user);
         return ResponseEntity.ok("Blog deleted successfully");

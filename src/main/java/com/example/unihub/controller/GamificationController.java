@@ -1,4 +1,4 @@
-package com.example.unihub.controller;
+package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
 
 import com.example.unihub.model.Badge;
 import com.example.unihub.model.Event;
@@ -86,7 +86,7 @@ public class GamificationController {
     public ResponseEntity<Map<String, Object>> getMyRank(
             @RequestParam(defaultValue = "GLOBAL") String scope,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         
         Long universityId = "UNIVERSITY".equalsIgnoreCase(scope) && user.getUniversity() != null 
@@ -138,7 +138,7 @@ public class GamificationController {
      */
     @GetMapping("/my-badges")
     public ResponseEntity<Map<String, Object>> getMyBadges(Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         
         List<Badge> allBadges = badgeRepository.findAllByOrderByPointsThresholdAsc();

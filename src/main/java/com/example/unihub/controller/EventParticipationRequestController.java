@@ -1,4 +1,4 @@
-package com.example.unihub.controller;
+package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
 
 import com.example.unihub.dto.ParticipationRequestDTO;
 import com.example.unihub.dto.ParticipationRequestResponseDTO;
@@ -26,7 +26,7 @@ public class EventParticipationRequestController {
             @PathVariable Long eventId,
             @RequestBody ParticipationRequestDTO dto,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         return ResponseEntity.ok(requestService.submitRequest(eventId, user.getUserId(), dto));
     }
@@ -40,7 +40,7 @@ public class EventParticipationRequestController {
     @GetMapping("/my-requests")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ParticipationRequestResponseDTO>> getMyRequests(Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         return ResponseEntity.ok(requestService.getUserRequests(user.getUserId()));
     }
@@ -50,7 +50,7 @@ public class EventParticipationRequestController {
     public ResponseEntity<Void> approveRequest(
             @PathVariable Long requestId,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         requestService.approveRequest(requestId, user.getUserId());
         return ResponseEntity.ok().build();
@@ -61,7 +61,7 @@ public class EventParticipationRequestController {
     public ResponseEntity<Void> rejectRequest(
             @PathVariable Long requestId,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         requestService.rejectRequest(requestId, user.getUserId());
         return ResponseEntity.ok().build();

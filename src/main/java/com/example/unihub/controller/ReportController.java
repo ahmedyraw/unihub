@@ -1,4 +1,4 @@
-package com.example.unihub.controller;
+package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
 
 import com.example.unihub.dto.response.BlogReportResponse;
 import com.example.unihub.dto.response.EventReportResponse;
@@ -35,7 +35,7 @@ public class ReportController {
             @RequestBody Map<String, String> request,
             Authentication authentication) {
         
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User reporter = userService.getUserByEmail(email);
         String reason = request.get("reason");
         
@@ -53,7 +53,7 @@ public class ReportController {
             @RequestBody Map<String, String> request,
             Authentication authentication) {
         
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User reporter = userService.getUserByEmail(email);
         String reason = request.get("reason");
         

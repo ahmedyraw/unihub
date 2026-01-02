@@ -1,4 +1,4 @@
-package com.example.unihub.controller;
+package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
 
 import com.example.unihub.enums.NotificationType;
 import com.example.unihub.model.Notification;
@@ -32,7 +32,7 @@ public class NotificationController {
             @RequestParam(required = false) NotificationType type,
             Authentication authentication) {
         
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         
         List<Notification> notifications;
@@ -54,7 +54,7 @@ public class NotificationController {
      */
     @GetMapping("/unread-count")
     public ResponseEntity<Map<String, Long>> getUnreadCount(Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         
         long count = notificationService.getUnreadCount(user.getUserId());
@@ -81,7 +81,7 @@ public class NotificationController {
      */
     @PutMapping("/read-all")
     public ResponseEntity<String> markAllAsRead(Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         notificationService.markAllAsRead(user.getUserId());
         return ResponseEntity.ok("All notifications marked as read");

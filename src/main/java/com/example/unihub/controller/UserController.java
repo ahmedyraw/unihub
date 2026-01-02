@@ -22,6 +22,9 @@ public class UserController {
      */
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
         String email = authentication.getName();
         User user = userService.getUserByEmail(email);
         return ResponseEntity.ok(user);
@@ -54,6 +57,9 @@ public class UserController {
     public ResponseEntity<User> updateProfile(
             @RequestBody Map<String, String> updates,
             Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
         String email = authentication.getName();
         User user = userService.getUserByEmail(email);
         
@@ -72,6 +78,9 @@ public class UserController {
     public ResponseEntity<String> changePassword(
             @RequestBody Map<String, String> request,
             Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
         String email = authentication.getName();
         User user = userService.getUserByEmail(email);
         
@@ -90,6 +99,9 @@ public class UserController {
     public ResponseEntity<String> setPassword(
             @RequestBody Map<String, String> request,
             Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
         String email = authentication.getName();
         User user = userService.getUserByEmail(email);
         
@@ -106,6 +118,9 @@ public class UserController {
     public ResponseEntity<User> updateUniversity(
             @RequestBody Map<String, Long> request,
             Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
         String email = authentication.getName();
         User user = userService.getUserByEmail(email);
         

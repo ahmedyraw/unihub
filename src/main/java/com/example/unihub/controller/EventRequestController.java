@@ -1,4 +1,4 @@
-package com.example.unihub.controller;
+package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
 
 import com.example.unihub.enums.ParticipantRole;
 import com.example.unihub.model.EventRequest;
@@ -26,7 +26,7 @@ public class EventRequestController {
     public ResponseEntity<EventRequest> createRequest(
             @RequestBody Map<String, Object> request,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         
         Long eventId = Long.valueOf(request.get("eventId").toString());
@@ -40,7 +40,7 @@ public class EventRequestController {
     public ResponseEntity<String> acceptRequest(
             @PathVariable Long id,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         
         eventRequestService.acceptRequest(id, user.getUserId());
@@ -58,7 +58,7 @@ public class EventRequestController {
 
     @GetMapping("/my-requests")
     public ResponseEntity<List<EventRequest>> getMyRequests(Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         List<EventRequest> requests = eventRequestService.getMyPendingRequests(user.getUserId());
         return ResponseEntity.ok(requests);

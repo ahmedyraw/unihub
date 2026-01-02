@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Container, Spinner } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
+import authService from '../services/authService';
 
 const OAuth2Redirect = () => {
   const navigate = useNavigate();
@@ -9,17 +10,26 @@ const OAuth2Redirect = () => {
   const { setUser } = useAuth();
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const error = searchParams.get('error');
+    const handleOAuth2Redirect = async () => {
+      const error = searchParams.get('error');
 
-    if (token) {
-      localStorage.setItem('token', token);
-      navigate('/dashboard', { replace: true });
-    } else if (error) {
-      navigate('/login?error=oauth2_failed', { replace: true });
-    } else {
-      navigate('/login', { replace: true });
-    }
+      if (error) {
+        navigate('/login?error=oauth2_failed', { replace: true });
+        return;
+      }
+
+      try {
+        // Token is in httpOnly cookie, just fetch user data
+        const userData = await authService.checkSession();
+        setUser(userData);
+        navigate('/dashboard', { replace: true });
+      } catch (err) {
+        console.error('OAuth2 redirect error:', err);
+        navigate('/login?error=oauth2_failed', { replace: true });
+      }
+    };
+
+    handleOAuth2Redirect();
   }, [searchParams, navigate, setUser]);
 
   return (

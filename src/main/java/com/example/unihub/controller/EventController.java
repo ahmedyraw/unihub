@@ -1,4 +1,4 @@
-package com.example.unihub.controller;
+package com.example.unihub.controller;`r`n`r`nimport com.example.unihub.util.AuthenticationUtil;
 
 import com.example.unihub.dto.request.CreateEventRequest;
 import com.example.unihub.dto.request.JoinEventRequest;
@@ -56,7 +56,7 @@ public class EventController {
     public ResponseEntity<Event> createEvent(
             @Valid @RequestBody CreateEventRequest request,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User creator = userService.getUserByEmail(email);
         Event event = eventService.createEvent(request, creator);
         return ResponseEntity.status(HttpStatus.CREATED).body(event);
@@ -71,7 +71,7 @@ public class EventController {
             @PathVariable Long id,
             @Valid @RequestBody CreateEventRequest request,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User currentUser = userService.getUserByEmail(email);
         Event event = eventService.updateEvent(id, request, currentUser);
         return ResponseEntity.ok(event);
@@ -86,7 +86,7 @@ public class EventController {
             @PathVariable Long id,
             @Valid @RequestBody JoinEventRequest request,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         eventService.joinEvent(id, user.getUserId(), request.getRole());
         return ResponseEntity.ok("Successfully joined event");
@@ -100,7 +100,7 @@ public class EventController {
     public ResponseEntity<String> leaveEvent(
             @PathVariable Long id,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         eventService.leaveEvent(id, user.getUserId());
         return ResponseEntity.ok("Left event successfully (penalty applied)");
@@ -148,7 +148,7 @@ public class EventController {
      */
     @GetMapping("/my-events")
     public ResponseEntity<List<Event>> getMyEvents(Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         List<Event> events = eventService.getEventsByCreator(user.getUserId());
         return ResponseEntity.ok(events);
@@ -160,7 +160,7 @@ public class EventController {
      */
     @GetMapping("/my-participations")
     public ResponseEntity<List<EventParticipant>> getMyParticipations(Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         List<EventParticipant> participations = eventService.getUserParticipations(user.getUserId());
         return ResponseEntity.ok(participations);
@@ -184,7 +184,7 @@ public class EventController {
     public ResponseEntity<String> deleteEvent(
             @PathVariable Long id,
             Authentication authentication) {
-        String email = authentication.getName();
+        String email = AuthenticationUtil.getEmailFromAuthentication(authentication);
         User user = userService.getUserByEmail(email);
         eventService.deleteEvent(id, user);
         return ResponseEntity.ok("Event deleted successfully");
